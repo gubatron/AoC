@@ -20,6 +20,7 @@ typedef struct IntCode
 
 std::vector<int> read_program();
 void print_instruction_at(int i, std::vector<int> &tape);
+void print_instruction(IntCode instruction, std::vector<int> const &tape);
 void print_program(std::vector<int> &tape);
 IntCode read_instruction(int program_counter, std::vector<int> const &tape);
 void run_instruction(IntCode const &instruction, std::vector<int> &tape);
