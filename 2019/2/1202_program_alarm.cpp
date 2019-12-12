@@ -24,17 +24,40 @@ void print_program(std::vector<int> &tape);
 IntCode read_instruction(int program_counter, std::vector<int> const &tape);
 void run_instruction(IntCode const &instruction, std::vector<int> &tape);
 void run_program(std::vector<int> &tape);
+int run_program_with_inputs(std::vector<int> &tape, int input_a, int input_b);
+void part1();
+void part2();
 
 int main()
 {
-  std::vector<int> tape = read_program();
-  tape[1] = 12;
-  tape[2] = 2;
-  print_program(tape);
-  run_program(tape);
-  print_program(tape);
-  std::cout << "Value left @0:" << tape[0] << std::endl << std::endl;
+  part2();
   return 0;
+}
+
+void part2() {
+  std::vector<int> tape_original = read_program();
+
+  for (int noun=0; noun <= 99; noun++) {
+    for (int verb=0; verb <= 99; verb++) {
+        std::vector<int> tape_copy = tape_original;
+        int output = run_program_with_inputs(tape_copy, noun, verb);
+        if (output == 19690720) {
+          std::cout << "We have a winner:" << std::endl;
+          std::cout << "noun: " << noun << ", verb: " << verb << std::endl;
+          std::cout << "answer: 100 * " << noun << " + " << verb << " = " << (100 * noun + verb) << std::endl;
+          return;
+        }
+    }
+  }
+}
+
+void part1() {
+  std::vector<int> tape = read_program();
+  print_program(tape);
+  int result = run_program_with_inputs(tape, 12, 2);
+  print_program(tape);
+  std::cout << "Result: " << result << std::endl;
+  std::cout << "Value left @0:" << tape[0] << std::endl << std::endl;
 }
 
 std::vector<int> read_program()
@@ -131,7 +154,7 @@ void run_program(std::vector<int> &tape)
   int pc = 0;
   IntCode instruction;
 
-  while (true && pc < tape.size())
+  while (pc < tape.size())
   {
     std::cout << "PC @ " << pc << std::endl;
     instruction = read_instruction(pc, tape);
@@ -141,4 +164,11 @@ void run_program(std::vector<int> &tape)
   }
   std::cout << std::endl
             << "Ended with PC @ " << pc << std::endl << std::endl;
+}
+
+int run_program_with_inputs(std::vector<int> &tape, int noun, int verb) {
+  tape[1] = noun;
+  tape[2] = verb;
+  run_program(tape);
+  return tape[0];
 }
