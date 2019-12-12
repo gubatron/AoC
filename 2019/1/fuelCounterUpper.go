@@ -34,10 +34,6 @@ func main() {
 		fmt.Printf("%d. mass=%d, fuel required=%d, total fuel=%d\n", i, m, fi, totalFuelRequired)
 	}
 
-	fmt.Printf("=============================================================================\n")
-	fmt.Printf("For the total fuel %d, we actually need -> %d\n", totalFuelRequired, fuelRecursive(totalFuelRequired))
-	fmt.Printf("=============================================================================\n")
-
 	totalFuelRequired = 0
 	for i, m := range moduleMassArray {
 		fi := fuelRecursive(m)
