@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-// g++ -std=c++17 1202_program_alarm.cpp -o 1202_program_alarm && ./1202_program_alert
 typedef int OpCode;
 const OpCode ADD = 1;
 const OpCode MULTIPLY = 2;
@@ -132,7 +131,7 @@ IntCode read_instruction(int program_counter, std::vector<int> &tape)
 }
 
 void run_instruction(IntCode const &instruction, std::vector<int> &tape)
-{  
+{
   switch (instruction.op_code)
   {
   case ADD:

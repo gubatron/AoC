@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROG=1202_program_alarm
+PROG=crossed_wires
 
 if [ -f ${PROG} ]; then
     echo "Cleaning old build..."
