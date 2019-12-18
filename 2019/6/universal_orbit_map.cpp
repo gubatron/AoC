@@ -23,9 +23,6 @@ typedef struct OrbitNode {
       auto it = std::find(this->orbits.begin(), this->orbits.end(), child);
       if (it == this->orbits.end()) {
         this->orbits.push_back(child);
-        std::cout << name << " added a new orbit " << child->name << std::endl;
-      } else {
-        std::cout << name << " already had orbit " << child->name << std::endl;
       }
       if (child->directOrbit == nullptr) {
         child->directOrbit = this;
@@ -99,20 +96,73 @@ std::map<std::string, OrbitNode*> read_program() {
   return all_nodes;
 }
 
-void part1() {
-  std::map<std::string, OrbitNode*> all_nodes = read_program();
+void part1(std::map<std::string, OrbitNode*> const &all_nodes) {
   auto it=all_nodes.begin();
   int sumOrbits = 0;
   while (it != all_nodes.end()) {
     auto current = it->second;
     int distance = current->distanceToCentralOrbit();
     sumOrbits += distance;
-    std::cout << current->name << " orbits below=" << distance << " total so far=" << sumOrbits << std::endl;
+    //std::cout << current->name << " orbits below=" << distance << " total so far=" << sumOrbits << std::endl;
     it++;
   }
+  std::cout << "part 1: " << sumOrbits << std::endl;
+}
+
+std::vector<OrbitNode*> pathToCOM(OrbitNode* node) {
+  std::vector<OrbitNode*> paths;
+  auto parent = node->directOrbit;
+  while (parent != nullptr) {
+    paths.push_back(parent);
+    parent = parent->directOrbit;
+  }
+  return paths;
+}
+
+OrbitNode* findCommonParent(std::vector<OrbitNode*> a, std::vector<OrbitNode*> b) {
+  auto it_a = a.begin();
+  auto it_b = b.begin();
+  while (it_a != a.end()) {
+    while (it_b != b.end()) {
+      if (*it_a == *it_b) {
+        return *it_a;
+      }
+      it_b++;
+    }
+    it_a++;
+    it_b = b.begin();
+  }
+  return nullptr; // should not happen with our data
+}
+
+int distanceToNode(OrbitNode* source, OrbitNode* target) {
+  if (source->directOrbit == target) {
+    return 0;
+  }
+  return 1 + distanceToNode(source->directOrbit, target);
+}
+
+void part2(std::map<std::string, OrbitNode*> &all_nodes) {
+  // find santa
+  auto santa = findNode("SAN", all_nodes);
+  // find yourself, how deep
+  auto you = findNode("YOU", all_nodes);
+
+  std::vector<OrbitNode*> santa_to_com = pathToCOM(santa);
+  std::vector<OrbitNode*> you_to_com = pathToCOM(you);
+  OrbitNode* common_node = findCommonParent(santa_to_com, you_to_com);
+  std::cout << std::endl << "findCommonParent: found " << common_node->name << std::endl;
+  int santa_distance = distanceToNode(santa, common_node);
+  int your_distance = distanceToNode(you, common_node);
+  std::cout << "santa_distance=" << santa_distance << std::endl;
+  std::cout << "your_distance=" << your_distance << std::endl;
+  std::cout << "" << std::endl;
+  std::cout << "part 2: " << santa_distance << " + " << your_distance << " = " << (santa_distance+your_distance) << std::endl;
 }
 
 int main() {
-  part1();
+  std::map<std::string, OrbitNode*> all_nodes = read_program();
+  part1(all_nodes);
+  part2(all_nodes);
   return 0;
 }
