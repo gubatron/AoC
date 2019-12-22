@@ -29,30 +29,6 @@ typedef struct OrbitNode {
       }
     }
 
-    OrbitNode* findOrbited(std::string nameOrbited) {
-      if (this->name == nameOrbited) {
-        return this;
-      }
-      if (this->orbits.empty()) {
-        // didn't find it in this branch
-        return nullptr;
-      }
-      auto it = this->orbits.begin();
-      while (it != this->orbits.end()) {
-        OrbitNode *current = *it;
-        if (current->name == nameOrbited) {
-          return current;
-        }
-        OrbitNode *candidate = nullptr;
-        candidate = current->findOrbited(nameOrbited);
-        if (candidate != nullptr) {
-          return candidate;
-        }
-        it++;
-      }
-      return nullptr;
-    }
-
     bool operator<(const OrbitNode &other) const {
         return this->name < other.name;
     }
