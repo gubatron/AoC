@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -17,6 +18,10 @@ std::string read_program() {
   return s;
 }
 
+int BLACK = 0;
+int WHITE = 1;
+int TRANSPARENT = 2;
+
 typedef struct layer {
   std::vector<std::vector<int>> sub_layers;
   int const id;
@@ -31,14 +36,14 @@ typedef struct layer {
       // read W characters
       std::vector<int> sub_layer;
       for (int j = 0; j < width; j++) {
-        int pixel = (int)input[i] - 48;
+        int pixel = (int)((int)input[i] - 48);
         sub_layer.push_back(pixel);
         i++;
       }
       // add sublayer
       sub_layers.push_back(sub_layer);
       if (sub_layers.size() == h) {
-          break;
+        break;
       }
     }
   }
@@ -101,28 +106,72 @@ layer find_layer_with_fewest(int const digit,
 }
 
 void part1() {
-  //std::string raw_input = "123456789012";
+  // std::string raw_input = "123456789012";
   std::string raw_input = read_program();
-  int const width = 25; //3;
-  int const height = 6; //2;
-
+  int const width = 25; // 3;
+  int const height = 6; // 2;
   std::vector<layer> layers = decode_layers(width, height, raw_input);
-  //std::cout << "Total Layers: " << layers.size() << std::endl;
-
-  int digit=0;
+  int digit = 0;
   layer fewest_0s = find_layer_with_fewest(digit, layers);
+  std::cout << "Part I answer: " << fewest_0s.countDigits(1) << " x "
+            << fewest_0s.countDigits(2) << " = "
+            << (fewest_0s.countDigits(1) * fewest_0s.countDigits(2))
+            << std::endl;
+}
 
-  //std::cout << "The layer with fewest " << digit << "s, is:" << std::endl;
-  //std::cout << fewest_0s.toString() << std::endl;
+std::string xyToString(int x, int y) {
+  std::ostringstream oss;
+  oss << x << "," << y;
+  return oss.str();
+}
 
-  //std::cout << "This layer has " << fewest_0s.countDigits(0) << " 0 digits." << std::endl;
-  //std::cout << "This layer has " << fewest_0s.countDigits(1) << " 1 digits." << std::endl;
-  //std::cout << "This layer has " << fewest_0s.countDigits(2) << " 2 digits." << std::endl << std::endl;
-  std::cout << "Part I answer: " << fewest_0s.countDigits(1) << " x " << fewest_0s.countDigits(2) << " = " << (fewest_0s.countDigits(1)*fewest_0s.countDigits(2)) << std::endl;
+void print_image(std::vector<layer> const &layers, int width, int height) {
+  std::map<std::string, int> image;
+  int x = 0;
+  int y = 0;
+  int z = 0; // 0 is top layer, N grows to the bottom, covered by the top.
+
+  for (auto it = layers.begin(); it != layers.end(); it++) {
+    layer l = *it;
+    for (y = 0; y < height; y++) {
+      for (x = 0; x < width; x++) {
+        std::string key = xyToString(x, y);
+        auto it = image.find(key);
+        std::vector<std::vector<int>> sub_layers = l.sub_layers;
+        std::vector<int> sub_layer = sub_layers[y];
+        int pixel_int = sub_layer[x];
+        if (it == image.end() && pixel_int != TRANSPARENT) {
+          image.insert(std::make_pair(key, pixel_int));
+        }
+      }
+    }
+  }
+
+  // now print it:
+  for (y = 0; y < height; y++) {
+    for (x = 0; x < width; x++) {
+      std::string key = xyToString(x, y);
+      auto it = image[key];
+      std::cout << it;
+    }
+    std::cout << std::endl;
+  }
+}
+
+void part2() {
+  //   std::string raw_input = "0222112222120000";
+  //   int const width = 2;
+  //   int const height = 2;
+  std::string raw_input = read_program();
+  int const width = 25;
+  int const height = 6;
+  std::vector<layer> layers = decode_layers(width, height, raw_input);
+  std::cout << std::endl << "Part II answer:" << std::endl;
+  print_image(layers, width, height);
 }
 
 int main() {
   part1();
-  // part2();
+  part2();
   return 0;
 }
