@@ -7,7 +7,7 @@ if [ -f ${PROG} ]; then
     rm ${PROG}
 fi
 
-g++ -std=c++17 ${PROG}.cpp -o ${PROG}
+g++ -std=c++17 -g ${PROG}.cpp -o ${PROG}
 
 if [ -f ${PROG} ]; then
   echo "Launching ${PROG}"

@@ -1,6 +1,7 @@
 // Author: @gubatron December 21, 2019
 #include <algorithm>
 #include <array>
+#include <deque>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -35,46 +36,66 @@ typedef struct IntCode {
 } IntCode;
 
 typedef struct VM {
+  char tag;
   int pc;
   std::vector<int> tape;
   std::deque<int> inputs;
   int output;
-  VM(std::vector<int> program) : pc(0), tape(program) {}
+  bool halted;
+  VM(char t, std::vector<int> program)
+      : tag(t), pc(0), tape(program), halted(false) {}
 } VM;
 
 std::array<int, 5> to_array(int n);
 std::vector<int> read_program();
 IntCode read_instruction(VM &tape);
-void run_instruction(VM &vm,
-                     IntCode const &instruction);
+void run_instruction(VM &vm, IntCode const &instruction);
 void run_program(VM &vm, int pc);
 std::string asSequence(int input);
 void part1();
 void part2();
-int amplifier(VM &vm, int phase_setting, int input_signal);
-int amplify_signal(int sequence, std::vector<int> const tape);
-std::vector<int> phase_sequence_generator();
+int amplifier(VM &vm, int const phase_setting, int const input_signal);
+int amplify_signal(bool const feedback_loop_mode, int const sequence,
+                   std::vector<int> const tape);
+std::vector<int> phase_sequence_generator(bool feedback_loop_mode);
 
 int main() {
-  part1();
+  //part1();
+  part2();
   return 0;
 }
 
 void part1() {
   std::vector<int> tape = read_program();
-  std::vector<int> sequences = phase_sequence_generator();
+  std::vector<int> sequences = phase_sequence_generator(false);
   int maxInput = 0, maxOutput = 0;
-  for (auto it = sequences.begin(); it != sequences.end(); it++) {    
+  for (auto it = sequences.begin(); it != sequences.end(); it++) {
     int output;
-    if ((output = amplify_signal(*it, tape)) > maxOutput) {
+    if ((output = amplify_signal(false, *it, tape)) > maxOutput) {
       maxInput = *it;
       maxOutput = output;
     }
   }
-   std::cout << "Part 1:  Max Thruster Signal = " << maxOutput << ", Phase Setting Sequence = " << asSequence(maxInput) << std::endl;
+  std::cout << "Part 1:  Max Thruster Signal = " << maxOutput
+            << ", Phase Setting Sequence = " << asSequence(maxInput)
+            << std::endl;
 }
 
-void part2() {}
+void part2() {
+  std::vector<int> tape = read_program();
+  std::vector<int> sequences = phase_sequence_generator(true);
+  int maxInput = 0, maxOutput = 0;
+  for (auto it = sequences.begin(); it != sequences.end(); it++) {
+    int output;
+    if ((output = amplify_signal(true, *it, tape)) > maxOutput) {
+      maxInput = *it;
+      maxOutput = output;
+    }
+  }
+  std::cout << "Part 2:  Max Thruster Signal = " << maxOutput
+            << ", Phase Setting Sequence = " << asSequence(maxInput)
+            << std::endl;
+}
 
 std::vector<int> read_program() {
   std::vector<int> program_data;
@@ -99,17 +120,19 @@ std::vector<int> read_program() {
   return program_data;
 }
 
-std::vector<int> phase_sequence_generator() {
+std::vector<int> phase_sequence_generator(bool feedback_loop_mode) {
   std::vector<int> sequences;
-  for (int i = 0; i <= 4; i++) {
-    for (int j = 0; j <= 4; j++) {
-      for (int k = 0; k <= 4; k++) {
-        for (int l = 0; l <= 4; l++) {
-          for (int m = 0; m <= 4; m++) {
-            if (i==j || i==k || i == l || i==m || j == k || j == l || j == m ||
-                k==l || k == m || l == m) {
-                continue;
-                }
+  int feedback_loop_offset = (feedback_loop_mode) ? 5 : 0;
+  for (int i = feedback_loop_offset; i <= 4 + feedback_loop_offset; i++) {
+    for (int j = feedback_loop_offset; j <= 4 + feedback_loop_offset; j++) {
+      for (int k = feedback_loop_offset; k <= 4 + feedback_loop_offset; k++) {
+        for (int l = feedback_loop_offset; l <= 4 + feedback_loop_offset; l++) {
+          for (int m = feedback_loop_offset; m <= 4 + feedback_loop_offset;
+               m++) {
+            if (i == j || i == k || i == l || i == m || j == k || j == l ||
+                j == m || k == l || k == m || l == m) {
+              continue;
+            }
             sequences.push_back(i * 10000 + j * 1000 + k * 100 + l * 10 + m);
           }
         }
@@ -119,27 +142,76 @@ std::vector<int> phase_sequence_generator() {
   return sequences;
 }
 
-int amplify_signal(int phase_sequence, std::vector<int> const tape) {
+int amplify_signal(bool const feedback_loop_mode, int const phase_sequence,
+                   std::vector<int> const tape) {
   std::array<int, 5> phase_seq_array = to_array(phase_sequence);
-  VM vm_a(tape);
-  VM vm_b(tape);
-  VM vm_c(tape);
-  VM vm_d(tape);
-  VM vm_e(tape);
+  VM vm_a('A', tape);
+  VM vm_b('B', tape);
+  VM vm_c('C', tape);
+  VM vm_d('D', tape);
+  VM vm_e('E', tape);
 
-  int output_amp_0 = amplifier(vm_a, phase_seq_array[0], 0);
-  int output_amp_1 = amplifier(vm_b, phase_seq_array[1], output_amp_0);
-  int output_amp_2 = amplifier(vm_c, phase_seq_array[2], output_amp_1);
-  int output_amp_3 = amplifier(vm_d, phase_seq_array[3], output_amp_2);
-  int output_amp_4 = amplifier(vm_e, phase_seq_array[4], output_amp_3);
-  return output_amp_4;
+  if (!feedback_loop_mode) {
+    int signal = 0;
+    signal = amplifier(vm_a, phase_seq_array[0], 0);
+    signal = amplifier(vm_b, phase_seq_array[1], signal);
+    signal = amplifier(vm_c, phase_seq_array[2], signal);
+    signal = amplifier(vm_d, phase_seq_array[3], signal);
+    signal = amplifier(vm_e, phase_seq_array[4], signal);
+    return signal;
+  } else {
+    // FEEDBACK LOOP MODE
+    int signal = 0;
+    while (!(vm_a.halted && vm_b.halted && vm_c.halted && vm_d.halted &&
+             vm_e.halted)) {
+      std::cout << signal << " => ";
+      if (!vm_a.halted) {
+        signal = amplifier(vm_a, phase_seq_array[0], signal);
+        std::cout << signal << " => ";
+      } else {
+        std::cout << "A halted => ";
+      }
+
+      if (!vm_b.halted) {
+        signal = amplifier(vm_b, phase_seq_array[1], signal);
+        std::cout << signal << " => ";
+      } else {
+        std::cout << "B halted => ";
+      }
+
+      if (!vm_c.halted) {
+        signal = amplifier(vm_c, phase_seq_array[2], signal);
+        std::cout << signal << " => ";
+      } else {
+        std::cout << "C halted => ";
+      }
+
+      if (!vm_d.halted) {
+        signal = amplifier(vm_d, phase_seq_array[3], signal);
+        std::cout << signal << " => ";
+      } else {
+        std::cout << "D halted => ";
+      }
+
+      if (!vm_e.halted) {
+        signal = amplifier(vm_e, phase_seq_array[4], signal);
+        std::cout << signal << " => ... " << std::endl;
+      } else {
+        std::cout << "E halted => ";
+      }
+    }
+    std::cout << "amplify_signal(phase_sequence=" << phase_sequence
+              << ") => signal=" << signal << std::endl;
+
+    return signal;
+  }
 }
 
 std::string asSequence(int input) {
   std::array<int, 5> sequenceArray = to_array(input);
   std::stringstream ss;
   ss << "[";
-  for (int i=0; i <= 4; i++) {
+  for (int i = 0; i <= 4; i++) {
     ss << sequenceArray[i];
     if (i < 4) {
       ss << ", ";
@@ -149,8 +221,8 @@ std::string asSequence(int input) {
   return ss.str();
 }
 
-int amplifier(VM &vm, int phase_setting, int input_signal) {
-  vm.output = 0; // watch out
+int amplifier(VM &vm, int const phase_setting, int const input_signal) {
+  // vm.output = 0; // watch out
   vm.inputs.push_back(phase_setting);
   vm.inputs.push_back(input_signal);
   run_program(vm, 0);
@@ -158,11 +230,19 @@ int amplifier(VM &vm, int phase_setting, int input_signal) {
 }
 
 void run_program(VM &vm, int pc) {
-  vm.pc = pc;
+  if (vm.halted) {
+    std::cout << "run_program() aborted. Amp " << vm.tag
+              << " was already halted!" << std::endl;
+    return;
+  }
   IntCode instruction;
+  vm.pc = pc;
   while (vm.pc < vm.tape.size()) {
     instruction = read_instruction(vm);
     run_instruction(vm, instruction);
+    if (vm.halted) {
+      break;
+    }
   }
 }
 
@@ -236,8 +316,7 @@ std::array<int, 5> to_array(int n) {
 }
 
 // returns how many steps we need to increase the program counter
-void run_instruction(VM &vm,
-                     IntCode const &instruction) {
+void run_instruction(VM &vm, IntCode const &instruction) {
   if (instruction.op_code != ADD && instruction.op_code != MULTIPLY &&
       instruction.op_code != INPUT && instruction.op_code != OUTPUT &&
       instruction.op_code != JUMP_IF_TRUE &&
@@ -250,6 +329,7 @@ void run_instruction(VM &vm,
     // ","
     //           << tape[pc + 3] << std::endl;
     vm.pc = vm.tape.size();
+    vm.halted = true;
     return;
   }
 
@@ -269,8 +349,14 @@ void run_instruction(VM &vm,
 
   // I/O
   if (instruction.op_code == INPUT) {
+    if (vm.inputs.size() == 0) {
+      throw std::runtime_error("vm inputs should never be 0 sized");
+    }
     vm.tape[operand_a] = vm.inputs.front();
-    vm.inputs.pop_front();
+    if (vm.inputs.size() > 1) {
+      vm.inputs.pop_front();
+    }
+
   } else if (instruction.op_code == OUTPUT) {
     vm.output = vm.tape[operand_a];
   }
@@ -292,6 +378,7 @@ void run_instruction(VM &vm,
   }
 
   if (instruction.op_code == END) {
+    vm.halted = true;
     vm.pc = vm.tape.size();
     return;
   }
