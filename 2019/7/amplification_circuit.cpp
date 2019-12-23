@@ -34,19 +34,25 @@ typedef struct IntCode {
   int next_offset;
 } IntCode;
 
+typedef struct VM {
+  int pc;
+  std::vector<int> tape;
+  std::deque<int> inputs;
+  int output;
+  VM(std::vector<int> program) : pc(0), tape(program) {}
+} VM;
+
 std::array<int, 5> to_array(int n);
 std::vector<int> read_program();
-IntCode read_instruction(int program_counter, int const input, std::vector<int> const &tape);
-void run_instruction(int &pc, int const input, int const input_2,
-                     IntCode const &instruction, std::vector<int> &tape,
-                     int &out);
-void run_program(int const input, int const input_2, std::vector<int> &tape,
-                 int &output);
+IntCode read_instruction(VM &tape);
+void run_instruction(VM &vm,
+                     IntCode const &instruction);
+void run_program(VM &vm, int pc);
 std::string asSequence(int input);
 void part1();
 void part2();
-int amplifier(char tag, std::vector<int> tape, int phase_setting, int input_signal);
-int amplify_signal(int sequence, std::vector<int> tape);
+int amplifier(VM &vm, int phase_setting, int input_signal);
+int amplify_signal(int sequence, std::vector<int> const tape);
 std::vector<int> phase_sequence_generator();
 
 int main() {
@@ -66,20 +72,6 @@ void part1() {
     }
   }
    std::cout << "Part 1:  Max Thruster Signal = " << maxOutput << ", Phase Setting Sequence = " << asSequence(maxInput) << std::endl;
-}
-
-std::string asSequence(int input) {
-  std::array<int, 5> sequenceArray = to_array(input);
-  std::stringstream ss;
-  ss << "[";
-  for (int i=0; i <= 4; i++) {
-    ss << sequenceArray[i];
-    if (i < 4) {
-      ss << ", ";
-    }
-  }
-  ss << "]";
-  return ss.str();
 }
 
 void part2() {}
@@ -127,37 +119,57 @@ std::vector<int> phase_sequence_generator() {
   return sequences;
 }
 
-int amplify_signal(int sequence, std::vector<int> tape) {
-  std::array<int, 5> seq_array = to_array(sequence);
-  int output_amp_0 = amplifier('A', tape, seq_array[0], 0);
-  int output_amp_1 = amplifier('B', tape, seq_array[1], output_amp_0);
-  int output_amp_2 = amplifier('C', tape, seq_array[2], output_amp_1);
-  int output_amp_3 = amplifier('D', tape, seq_array[3], output_amp_2);
-  int output_amp_4 = amplifier('E', tape ,seq_array[4], output_amp_3);
+int amplify_signal(int phase_sequence, std::vector<int> const tape) {
+  std::array<int, 5> phase_seq_array = to_array(phase_sequence);
+  VM vm_a(tape);
+  VM vm_b(tape);
+  VM vm_c(tape);
+  VM vm_d(tape);
+  VM vm_e(tape);
+
+  int output_amp_0 = amplifier(vm_a, phase_seq_array[0], 0);
+  int output_amp_1 = amplifier(vm_b, phase_seq_array[1], output_amp_0);
+  int output_amp_2 = amplifier(vm_c, phase_seq_array[2], output_amp_1);
+  int output_amp_3 = amplifier(vm_d, phase_seq_array[3], output_amp_2);
+  int output_amp_4 = amplifier(vm_e, phase_seq_array[4], output_amp_3);
   return output_amp_4;
 }
 
-int amplifier(char tag, std::vector<int> tape, int phase_setting, int input_signal) {
-  int output = 0;   
-  run_program(phase_setting, input_signal, tape, output);
-  return output;
+std::string asSequence(int input) {
+  std::array<int, 5> sequenceArray = to_array(input);
+  std::stringstream ss;
+  ss << "[";
+  for (int i=0; i <= 4; i++) {
+    ss << sequenceArray[i];
+    if (i < 4) {
+      ss << ", ";
+    }
+  }
+  ss << "]";
+  return ss.str();
 }
 
-void run_program(int const input, int const input_2, std::vector<int> &tape,
-                 int &output) {
-  int pc = 0;
-  IntCode instruction;
+int amplifier(VM &vm, int phase_setting, int input_signal) {
+  vm.output = 0; // watch out
+  vm.inputs.push_back(phase_setting);
+  vm.inputs.push_back(input_signal);
+  run_program(vm, 0);
+  return vm.output;
+}
 
-  while (pc < tape.size()) {
-    instruction = read_instruction(pc, input, tape);
-    run_instruction(pc, input, input_2, instruction, tape, output);
+void run_program(VM &vm, int pc) {
+  vm.pc = pc;
+  IntCode instruction;
+  while (vm.pc < vm.tape.size()) {
+    instruction = read_instruction(vm);
+    run_instruction(vm, instruction);
   }
 }
 
-IntCode read_instruction(int pc, int const input, std::vector<int> const &tape) {
+IntCode read_instruction(VM &vm) {
   IntCode instruction;
-  instruction.modes_n_opcode = tape[pc];
-  std::array<int, 5> modes_n_opcode = to_array(tape[pc]);
+  instruction.modes_n_opcode = vm.tape[vm.pc];
+  std::array<int, 5> modes_n_opcode = to_array(vm.tape[vm.pc]);
 
   instruction.mode_operand_a = modes_n_opcode[2];
   instruction.mode_operand_b = modes_n_opcode[1];
@@ -170,28 +182,28 @@ IntCode read_instruction(int pc, int const input, std::vector<int> const &tape) 
   case MULTIPLY:
     instruction.next_offset = 4;
     instruction.operand_a = instruction.mode_operand_a == IMMEDIATE
-                                ? tape[pc + 1]
-                                : tape[tape[pc + 1]];
+                                ? vm.tape[vm.pc + 1]
+                                : vm.tape[vm.tape[vm.pc + 1]];
     instruction.operand_b = instruction.mode_operand_b == IMMEDIATE
-                                ? tape[pc + 2]
-                                : tape[tape[pc + 2]];
-    instruction.operand_c = tape[pc + 3];
+                                ? vm.tape[vm.pc + 2]
+                                : vm.tape[vm.tape[vm.pc + 2]];
+    instruction.operand_c = vm.tape[vm.pc + 3];
     break;
   case LESS_THAN:
   case EQUALS:
     instruction.next_offset = 4;
     instruction.operand_a = instruction.mode_operand_a == IMMEDIATE
-                                ? tape[pc + 1]
-                                : tape[tape[pc + 1]];
+                                ? vm.tape[vm.pc + 1]
+                                : vm.tape[vm.tape[vm.pc + 1]];
     instruction.operand_b = instruction.mode_operand_b == IMMEDIATE
-                                ? tape[pc + 2]
-                                : tape[tape[pc + 2]];
-    instruction.operand_c = tape[pc + 3];
+                                ? vm.tape[vm.pc + 2]
+                                : vm.tape[vm.tape[vm.pc + 2]];
+    instruction.operand_c = vm.tape[vm.pc + 3];
     break;
   case INPUT:
   case OUTPUT:
     instruction.next_offset = 2;
-    instruction.operand_a = tape[pc + 1];
+    instruction.operand_a = vm.tape[vm.pc + 1];
     instruction.operand_b = -1;
     instruction.operand_c = -1;
     break;
@@ -199,11 +211,11 @@ IntCode read_instruction(int pc, int const input, std::vector<int> const &tape) 
   case JUMP_IF_FALSE:
     instruction.next_offset = 3;
     instruction.operand_a = instruction.mode_operand_a == IMMEDIATE
-                                ? tape[pc + 1]
-                                : tape[tape[pc + 1]];
+                                ? vm.tape[vm.pc + 1]
+                                : vm.tape[vm.tape[vm.pc + 1]];
     instruction.operand_b = instruction.mode_operand_b == IMMEDIATE
-                                ? tape[pc + 2]
-                                : tape[tape[pc + 2]];
+                                ? vm.tape[vm.pc + 2]
+                                : vm.tape[vm.tape[vm.pc + 2]];
     instruction.operand_c = -1;
     break;
   }
@@ -224,9 +236,8 @@ std::array<int, 5> to_array(int n) {
 }
 
 // returns how many steps we need to increase the program counter
-void run_instruction(int &pc, int const input, int const input_2,
-                     IntCode const &instruction, std::vector<int> &tape,
-                     int &output) {
+void run_instruction(VM &vm,
+                     IntCode const &instruction) {
   if (instruction.op_code != ADD && instruction.op_code != MULTIPLY &&
       instruction.op_code != INPUT && instruction.op_code != OUTPUT &&
       instruction.op_code != JUMP_IF_TRUE &&
@@ -238,7 +249,7 @@ void run_instruction(int &pc, int const input, int const input_2,
     // std::cout << tape[pc] << "," << tape[pc + 1] << "," << tape[pc + 2] <<
     // ","
     //           << tape[pc + 3] << std::endl;
-    pc = tape.size();
+    vm.pc = vm.tape.size();
     return;
   }
 
@@ -253,40 +264,38 @@ void run_instruction(int &pc, int const input, int const input_2,
     } else if (instruction.op_code == MULTIPLY) {
       result = operand_a * operand_b;
     }
-    tape[instruction.operand_c] = result;
+    vm.tape[instruction.operand_c] = result;
   }
 
   // I/O
   if (instruction.op_code == INPUT) {
-    tape[operand_a] = (pc == 0) ? input : input_2;
+    vm.tape[operand_a] = vm.inputs.front();
+    vm.inputs.pop_front();
   } else if (instruction.op_code == OUTPUT) {
-    output = tape[operand_a];
+    vm.output = vm.tape[operand_a];
   }
 
   // JUMP_IF_TRUE/JUMP_IF_FALSE
   if ((instruction.op_code == JUMP_IF_TRUE && instruction.operand_a != 0) ||
       (instruction.op_code == JUMP_IF_FALSE && instruction.operand_a == 0)) {
-    if (instruction.op_code == JUMP_IF_TRUE) {
-    } else if (instruction.op_code == JUMP_IF_FALSE) {
-    }
-    pc = instruction.operand_b;
+    vm.pc = instruction.operand_b;
     return;
   }
 
   // LESS THAN / EQUALS
   if (instruction.op_code == LESS_THAN) {
-    tape[instruction.operand_c] =
+    vm.tape[instruction.operand_c] =
         (instruction.operand_a < instruction.operand_b) ? 1 : 0;
   } else if (instruction.op_code == EQUALS) {
-    tape[instruction.operand_c] =
+    vm.tape[instruction.operand_c] =
         (instruction.operand_a == instruction.operand_b) ? 1 : 0;
   }
 
   if (instruction.op_code == END) {
-    pc = tape.size();
+    vm.pc = vm.tape.size();
     return;
   }
-  pc += instruction.next_offset;
+  vm.pc += instruction.next_offset;
 } // run_instruction
 
 void print_opcode_name(int opcode) {
