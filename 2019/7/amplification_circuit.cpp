@@ -42,25 +42,28 @@ typedef struct VM {
   std::deque<int> inputs;
   int output;
   bool halted;
-  VM(char t, std::vector<int> program)
-      : tag(t), pc(0), tape(program), halted(false) {}
+  bool paused;
+  VM(char t, std::vector<int> program, int const phase_setting)
+      : tag(t), pc(0), tape(program), halted(false), paused(false) {
+    inputs.push_back(phase_setting);
+  }
 } VM;
 
 std::array<int, 5> to_array(int n);
 std::vector<int> read_program();
 IntCode read_instruction(VM &tape);
 void run_instruction(VM &vm, IntCode const &instruction);
-void run_program(VM &vm, int pc);
+void run_program(VM &VM);
 std::string asSequence(int input);
 void part1();
 void part2();
-int amplifier(VM &vm, int const phase_setting, int const input_signal);
+int amplifier(VM &vm, int const input_signal);
 int amplify_signal(bool const feedback_loop_mode, int const sequence,
                    std::vector<int> const tape);
 std::vector<int> phase_sequence_generator(bool feedback_loop_mode);
 
 int main() {
-  //part1();
+  part1();
   part2();
   return 0;
 }
@@ -145,64 +148,32 @@ std::vector<int> phase_sequence_generator(bool feedback_loop_mode) {
 int amplify_signal(bool const feedback_loop_mode, int const phase_sequence,
                    std::vector<int> const tape) {
   std::array<int, 5> phase_seq_array = to_array(phase_sequence);
-  VM vm_a('A', tape);
-  VM vm_b('B', tape);
-  VM vm_c('C', tape);
-  VM vm_d('D', tape);
-  VM vm_e('E', tape);
+  VM vm_a('A', tape, phase_seq_array[0]);
+  VM vm_b('B', tape, phase_seq_array[1]);
+  VM vm_c('C', tape, phase_seq_array[2]);
+  VM vm_d('D', tape, phase_seq_array[3]);
+  VM vm_e('E', tape, phase_seq_array[4]);
 
   if (!feedback_loop_mode) {
     int signal = 0;
-    signal = amplifier(vm_a, phase_seq_array[0], 0);
-    signal = amplifier(vm_b, phase_seq_array[1], signal);
-    signal = amplifier(vm_c, phase_seq_array[2], signal);
-    signal = amplifier(vm_d, phase_seq_array[3], signal);
-    signal = amplifier(vm_e, phase_seq_array[4], signal);
+    signal = amplifier(vm_a, 0);
+    signal = amplifier(vm_b, signal);
+    signal = amplifier(vm_c, signal);
+    signal = amplifier(vm_d, signal);
+    signal = amplifier(vm_e, signal);
     return signal;
   } else {
     // FEEDBACK LOOP MODE
     int signal = 0;
-    while (!(vm_a.halted && vm_b.halted && vm_c.halted && vm_d.halted &&
-             vm_e.halted)) {
-      std::cout << signal << " => ";
-      if (!vm_a.halted) {
-        signal = amplifier(vm_a, phase_seq_array[0], signal);
-        std::cout << signal << " => ";
-      } else {
-        std::cout << "A halted => ";
-      }
-
-      if (!vm_b.halted) {
-        signal = amplifier(vm_b, phase_seq_array[1], signal);
-        std::cout << signal << " => ";
-      } else {
-        std::cout << "B halted => ";
-      }
-
-      if (!vm_c.halted) {
-        signal = amplifier(vm_c, phase_seq_array[2], signal);
-        std::cout << signal << " => ";
-      } else {
-        std::cout << "C halted => ";
-      }
-
-      if (!vm_d.halted) {
-        signal = amplifier(vm_d, phase_seq_array[3], signal);
-        std::cout << signal << " => ";
-      } else {
-        std::cout << "D halted => ";
-      }
-
-      if (!vm_e.halted) {
-        signal = amplifier(vm_e, phase_seq_array[4], signal);
-        std::cout << signal << " => ... " << std::endl;
-      } else {
-        std::cout << "E halted => ";
-      }
+    while (!vm_e.halted) {
+      signal = amplifier(vm_a, signal);
+      signal = amplifier(vm_b, signal);
+      signal = amplifier(vm_c, signal);
+      signal = amplifier(vm_d, signal);
+      signal = amplifier(vm_e, signal);
     }
-    std::cout << "amplify_signal(phase_sequence=" << phase_sequence
-              << ") => signal=" << signal << std::endl;
-
+    // std::cout << "amplify_signal(phase_sequence=" << phase_sequence
+    //           << ") => signal=" << signal << std::endl;
     return signal;
   }
 }
@@ -221,26 +192,24 @@ std::string asSequence(int input) {
   return ss.str();
 }
 
-int amplifier(VM &vm, int const phase_setting, int const input_signal) {
-  // vm.output = 0; // watch out
-  vm.inputs.push_back(phase_setting);
+int amplifier(VM &vm, int const input_signal) {
   vm.inputs.push_back(input_signal);
-  run_program(vm, 0);
+  run_program(vm);
   return vm.output;
 }
 
-void run_program(VM &vm, int pc) {
+void run_program(VM &vm) {
   if (vm.halted) {
     std::cout << "run_program() aborted. Amp " << vm.tag
               << " was already halted!" << std::endl;
     return;
   }
   IntCode instruction;
-  vm.pc = pc;
+  vm.paused = false;
   while (vm.pc < vm.tape.size()) {
     instruction = read_instruction(vm);
     run_instruction(vm, instruction);
-    if (vm.halted) {
+    if (vm.halted || vm.paused) {
       break;
     }
   }
@@ -323,11 +292,10 @@ void run_instruction(VM &vm, IntCode const &instruction) {
       instruction.op_code != JUMP_IF_FALSE &&
       instruction.op_code != LESS_THAN && instruction.op_code != EQUALS &&
       instruction.op_code != END) {
-    // std::cout << "HALTING, invalid instruction op_code = "
-    //           << instruction.op_code << std::endl;
-    // std::cout << tape[pc] << "," << tape[pc + 1] << "," << tape[pc + 2] <<
-    // ","
-    //           << tape[pc + 3] << std::endl;
+    std::cout << "HALTING, invalid instruction op_code = "
+              << instruction.op_code << std::endl;
+    std::cout << vm.tape[vm.pc] << "," << vm.tape[vm.pc + 1] << ","
+              << vm.tape[vm.pc + 2] << "," << vm.tape[vm.pc + 3] << std::endl;
     vm.pc = vm.tape.size();
     vm.halted = true;
     return;
@@ -353,12 +321,16 @@ void run_instruction(VM &vm, IntCode const &instruction) {
       throw std::runtime_error("vm inputs should never be 0 sized");
     }
     vm.tape[operand_a] = vm.inputs.front();
-    if (vm.inputs.size() > 1) {
+    // std::cout << "VM " << vm.tag << " INPUT <= " << vm.tape[operand_a] <<
+    // std::endl;
+    if (vm.inputs.size() > 0) {
       vm.inputs.pop_front();
     }
 
   } else if (instruction.op_code == OUTPUT) {
     vm.output = vm.tape[operand_a];
+    // std::cout << "VM " << vm.tag << " OUTPUT <= " << vm.output << std::endl;
+    vm.paused = true;
   }
 
   // JUMP_IF_TRUE/JUMP_IF_FALSE
@@ -378,6 +350,7 @@ void run_instruction(VM &vm, IntCode const &instruction) {
   }
 
   if (instruction.op_code == END) {
+    // std::cout << "halting on END instruction" << std::endl;
     vm.halted = true;
     vm.pc = vm.tape.size();
     return;
