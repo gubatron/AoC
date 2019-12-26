@@ -229,6 +229,9 @@ IntCode read_instruction(VM &vm) {
   switch (instruction.op_code) {
   case ADD:
   case MULTIPLY:
+  case LESS_THAN:
+  case EQUALS:
+ 
     instruction.next_offset = 4;
     instruction.operand_a = instruction.mode_operand_a == IMMEDIATE
                                 ? vm.tape[vm.pc + 1]
@@ -238,16 +241,6 @@ IntCode read_instruction(VM &vm) {
                                 : vm.tape[vm.tape[vm.pc + 2]];
     instruction.operand_c = vm.tape[vm.pc + 3];
     break;
-  case LESS_THAN:
-  case EQUALS:
-    instruction.next_offset = 4;
-    instruction.operand_a = instruction.mode_operand_a == IMMEDIATE
-                                ? vm.tape[vm.pc + 1]
-                                : vm.tape[vm.tape[vm.pc + 1]];
-    instruction.operand_b = instruction.mode_operand_b == IMMEDIATE
-                                ? vm.tape[vm.pc + 2]
-                                : vm.tape[vm.tape[vm.pc + 2]];
-    instruction.operand_c = vm.tape[vm.pc + 3];
     break;
   case INPUT:
   case OUTPUT:
