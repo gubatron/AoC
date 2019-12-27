@@ -43,7 +43,7 @@ void part1();
 void part2(int const input);
 
 int main() {
-  //part1();
+  part1();
   part2(5);
   return 0;
 }

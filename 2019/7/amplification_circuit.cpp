@@ -231,7 +231,6 @@ IntCode read_instruction(VM &vm) {
   case MULTIPLY:
   case LESS_THAN:
   case EQUALS:
- 
     instruction.next_offset = 4;
     instruction.operand_a = instruction.mode_operand_a == IMMEDIATE
                                 ? vm.tape[vm.pc + 1]

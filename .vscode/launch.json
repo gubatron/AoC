@@ -3,13 +3,13 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": [
+    "configurations": [        
         {
             "type": "lldb",
             "request": "launch",
-            "name": "2019/7 Amplification Circuit",
-            "program": "${workspaceRoot}/2019/7/amplification_circuit",
-            "cwd": "${workspaceRoot}/2019/7"
-        },
+            "name": "2019/9 Sensor Boost",
+            "program": "${workspaceRoot}/2019/9/sensor_boost",
+            "cwd": "${workspaceRoot}/2019/9"
+        },        
     ]
 }
