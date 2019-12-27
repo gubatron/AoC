@@ -108,7 +108,7 @@ int main() {
   test_big_multiplication();
   test_output_bignumber();
   part1();
-  // part2();
+  part2();
   return 0;
 }
 
@@ -213,6 +213,17 @@ void part1() {
   vm.quiet_output = false;
   vm.pause_on_output = false;
   vm.add_input(1);
+  run_program(vm);
+  std::cout << std::endl;
+}
+
+void part2() {
+  std::vector<bignumber> tape = read_program_from_file("input.txt");
+  std::cout << std::endl << "[E] Day 9/Part 2: 53088" << std::endl;
+  VM vm("part2", tape);
+  vm.quiet_output = false;
+  vm.pause_on_output = false;
+  vm.add_input(2);
   run_program(vm);
   std::cout << std::endl;
 }
@@ -385,6 +396,7 @@ void prepare_operand(VM const &vm, int const operand_mode,
   if (operand_mode == POSITION && !isOutputParameter) {
     operand = vm.tape[parameter];
   } else if (operand_mode == POSITION && isOutputParameter) {
+    // output parameters ARE the output addresses
     operand = parameter; // INPUT fits this
   } else if (operand_mode == IMMEDIATE && !isOutputParameter) {
     operand = parameter;
@@ -396,6 +408,7 @@ void prepare_operand(VM const &vm, int const operand_mode,
   } else if (operand_mode == RELATIVE && !isOutputParameter) {
     operand = vm.tape[vm.relative_base + parameter];
   } else if (operand_mode == RELATIVE && isOutputParameter) {
+    // output parameters ARE the output addresses
     operand = vm.relative_base + parameter; // INPUT fits this
   }
 }
