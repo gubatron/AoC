@@ -1,0 +1,32 @@
+plugins {
+    id 'java-library'
+    id 'application'
+}
+
+compileJava {
+    options.incremental = true
+    options.fork = true
+    options.failOnError = false
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(15)
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["."]
+        }
+    }
+}
+
+ext {
+    javaMainClass = "com.gubatron.aoc.Day02"
+}
+
+application {
+    mainClassName = javaMainClass
+}
