@@ -18,13 +18,13 @@ java {
 sourceSets {
     main {
         java {
-            srcDirs = ["."]
+            srcDirs = ["src"]
         }
     }
 }
 
 ext {
-    javaMainClass = "com.gubatron.aoc.Day02"
+    javaMainClass = "com.gubatron.aoc._2020.Day02"
 }
 
 application {

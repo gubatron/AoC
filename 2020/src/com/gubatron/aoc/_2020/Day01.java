@@ -1,4 +1,4 @@
-package com.gubatron.aoc;
+package com.gubatron.aoc._2020;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -72,7 +72,7 @@ public class Day01 {
     }
 
     public static void main(String[] args) throws FileNotFoundException {
-        File f = new File("input_day_01.txt");
+        File f = new File("inputs/input_day_01.txt");
         List<Integer> list = getList(f);
         System.out.println("Part 1:");
         System.out.println(partOne(list) + "\n");
