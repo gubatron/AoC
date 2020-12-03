@@ -30,7 +30,6 @@ public class Day04 {
     public static void main(String[] args) throws IOException {
         //List<String> lines = readInput(new File("resources/sample_day_04.txt"));
         List<String> lines = readInput(new File("resources/input_day_04.txt"));
-        String[] forest = lines.toArray(new String[0]);
         System.out.println("DAY 04");
         System.out.println("Part 1" + part1());
         System.out.println("\n==============================\n");
