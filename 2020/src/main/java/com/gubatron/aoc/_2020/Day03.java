@@ -57,10 +57,8 @@ public class Day03 {
     }
 
     public static void main(String[] args) throws IOException {
-        //List<String> lines = readInput(new File("inputs/sample_day_03.txt"));
-        List<String> lines = readInput(new File("inputs/input_day_03.txt"));
-        int width = lines.get(0).length();
-        int height = lines.size();
+        //List<String> lines = readInput(new File("resources/sample_day_03.txt"));
+        List<String> lines = readInput(new File("resources/input_day_03.txt"));
         String[] forest = lines.toArray(new String[0]);
         System.out.println("DAY 03");
         System.out.println("Part 1 Trees Found: " + part1(forest, 3, 1));

@@ -78,8 +78,8 @@ public class Day02 {
 
 
     public static void main(String[] args) throws IOException {
-        List<PolicyPass> policyPasses = readInput(new File("inputs/input_day_02.txt"));
-        //List<PolicyPass> policyPasses = readInput(new File("inputs/sample_day_02.txt"));
+        List<PolicyPass> policyPasses = readInput(new File("resources/input_day_02.txt"));
+        //List<PolicyPass> policyPasses = readInput(new File("resources/sample_day_02.txt"));
         System.out.println("Part 1: " + part1(policyPasses));
         System.out.println("Part 2: " + part2(policyPasses));
     }

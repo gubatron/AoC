@@ -72,7 +72,7 @@ public class Day01 {
     }
 
     public static void main(String[] args) throws FileNotFoundException {
-        File f = new File("inputs/input_day_01.txt");
+        File f = new File("resources/input_day_01.txt");
         List<Integer> list = getList(f);
         System.out.println("Part 1:");
         System.out.println(partOne(list) + "\n");
