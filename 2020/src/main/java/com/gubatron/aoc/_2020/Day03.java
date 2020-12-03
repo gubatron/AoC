@@ -1,21 +1,12 @@
 package com.gubatron.aoc._2020;
 
-import java.io.*;
-import java.util.ArrayList;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
+import static com.gubatron.aoc._2020.Utils.readStringList;
+
 public class Day03 {
-    public static List<String> readInput(File f) throws IOException {
-        List<String> result = new ArrayList<>();
-        BufferedReader br = new BufferedReader(new FileReader(f));
-
-        while (br.ready()) {
-            String line = br.readLine().strip();
-            result.add(line);
-        }
-        return result;
-    }
-
     public static int part1(String[] forest, int right_moves, int down_moves) {
         int pos_x = 0;
         int pos_y = 0;
@@ -58,7 +49,7 @@ public class Day03 {
 
     public static void main(String[] args) throws IOException {
         //List<String> lines = readInput(new File("resources/sample_day_03.txt"));
-        List<String> lines = readInput(new File("resources/input_day_03.txt"));
+        List<String> lines = readStringList(new File("resources/input_day_03.txt"));
         String[] forest = lines.toArray(new String[0]);
         System.out.println("DAY 03");
         System.out.println("Part 1 Trees Found: " + part1(forest, 3, 1));

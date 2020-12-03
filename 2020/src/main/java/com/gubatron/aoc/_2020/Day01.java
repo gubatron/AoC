@@ -1,12 +1,13 @@
 package com.gubatron.aoc._2020;
 
-import java.io.*;
-import java.util.ArrayList;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
+
+import static com.gubatron.aoc._2020.Utils.readIntList;
 
 public class Day01 {
     public static int partOne(List<Integer> list) {
-
         for (int i = 0; i < list.size(); i++) {
             for (int j = 0; j < list.size(); j++) {
                 if (j == i) {
@@ -28,7 +29,6 @@ public class Day01 {
     }
 
     public static int partTwo(List<Integer> list) {
-
         for (int i = 0; i < list.size(); i++) {
             for (int j = 0; j < list.size(); j++) {
                 for (int k = 0; k < list.size(); k++) {
@@ -52,28 +52,9 @@ public class Day01 {
         return 0;
     }
 
-
-    public static List<Integer> getList(File f) throws FileNotFoundException {
-        List<Integer> list = new ArrayList<>();
-        BufferedReader br = new BufferedReader(new FileReader(f));
-        while (true) {
-            try {
-                if (!br.ready()) break;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                list.add(Integer.parseInt(br.readLine()));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return list;
-    }
-
     public static void main(String[] args) throws FileNotFoundException {
         File f = new File("resources/input_day_01.txt");
-        List<Integer> list = getList(f);
+        List<Integer> list = readIntList(f);
         System.out.println("Part 1:");
         System.out.println(partOne(list) + "\n");
 
