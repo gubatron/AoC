@@ -20,7 +20,7 @@ public class DayN {
         List<String> lines = readStringList(new File("resources/input_day_04.txt"));
         System.out.println("DAY NN");
         System.out.println("Part 1: " + part1());
-        System.out.println("\n==============================\n");
-        System.out.println("Part 2:\n" + part2());
+        System.out.println("==============================\n");
+        System.out.println("Part 2: " + part2());
     }
 }
