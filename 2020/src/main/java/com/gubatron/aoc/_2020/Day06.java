@@ -17,7 +17,6 @@ public class Day06 {
             if (answers.size() == 1) {
                 return answers.get(0).length();
             }
-
             Hashtable<String, Integer> commonChars = new Hashtable<>();
             for (String answer : answers) {
                 char[] chars = answer.toCharArray();
@@ -57,7 +56,6 @@ public class Day06 {
         if (!collector.isEmpty()) {
             groups.add(collector.toString());
         }
-
         int total = 0;
         for (String g : groups) {
             total += countDistinctAnswers(g);
@@ -76,7 +74,6 @@ public class Day06 {
                 group.answers = new ArrayList<>(lastGroupAnswers);
                 groups.add(group);
                 lastGroupAnswers.clear();
-
             }
         }
         if (!lastGroupAnswers.isEmpty()) {
@@ -84,9 +81,7 @@ public class Day06 {
             group.answers = new ArrayList<>(lastGroupAnswers);
             groups.add(group);
         }
-
         int totalAnswers = 0;
-        int i=0;
         for (Group g : groups) {
             int commonAnswers = g.countCommonAnswers();
             totalAnswers += commonAnswers;
