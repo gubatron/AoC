@@ -2,9 +2,24 @@ package com.gubatron.aoc._2020;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class Utils {
+
+    static List<String> readStringsBySeparator(File f, String separator) throws IOException {
+        List<String> result = new ArrayList<>();
+        BufferedReader br = new BufferedReader(new FileReader(f));
+        StringBuilder sb = new StringBuilder();
+        while (br.ready()) {
+          sb.append(br.readLine());
+          sb.append("\n");
+        }
+        String[] split = sb.toString().split(separator);
+        Collections.addAll(result, split);
+        return result;
+    }
+
     static List<String> readStringList(File f) throws IOException {
         List<String> result = new ArrayList<>();
         BufferedReader br = new BufferedReader(new FileReader(f));
