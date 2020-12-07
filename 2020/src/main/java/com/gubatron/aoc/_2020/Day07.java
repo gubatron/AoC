@@ -3,12 +3,9 @@ package com.gubatron.aoc._2020;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Day07 {
-    final static Pattern NUMBER_COLOR = Pattern.compile("^(\\d+) ([a-z ]+)$");
-
     static class BagRule {
         String color;
         // color -> how many bags contained
