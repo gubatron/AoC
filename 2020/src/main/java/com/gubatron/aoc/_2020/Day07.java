@@ -2,7 +2,10 @@ package com.gubatron.aoc._2020;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class Day07 {
@@ -17,15 +20,12 @@ public class Day07 {
                     replace("bag, ", "").
                     replace(" bags.", "").
                     replace("bag.", "");
-
             String[] split = cleanLine.split(":");
             color = split[0];
-
             String rest = split[1].strip();
             if (rest.contains("no other")) {
                 return;
             }
-
             String[] singles = rest.split(" ");
             for (int i = 0; i < singles.length; i += 3) {
                 int amount = Integer.parseInt(singles[i]);
@@ -65,31 +65,15 @@ public class Day07 {
         return matchedRules.size();
     }
 
-    public static BagRule findRule(List<BagRule> totalRules, String color) {
-        // Find the rule for the given color
-        for (BagRule r : totalRules) {
-            if (r.color.equals((color))) {
-                return r;
-            }
-        }
-        return null;
-    }
-
+    // We convert each <String,Integer> node into an Integer out of:
+    // inner_bag_count + (inner_bag_count * countChildrenBags(current_color)) [recursive]
+    // So then we sum everything
     public static int countChildrenBags(List<BagRule> totalRules, String color) {
-        BagRule targetRule = findRule(totalRules, color);
-        if (targetRule == null) {
-            return 0;
-        }
-        Set<String> colors = targetRule.containedBags.keySet();
-        if (colors.isEmpty()) {
-            return 0;
-        }
-        int totalBags = 0;
-        for (String inner_bag_color : colors) {
-            int inner_bag_count = targetRule.containedBags.get(inner_bag_color);
-            totalBags = totalBags + (inner_bag_count) + (inner_bag_count * countChildrenBags(totalRules, inner_bag_color));
-        }
-        return totalBags;
+        return totalRules.stream().filter(r -> r.color.equals(color)).findFirst().orElse(null).
+                containedBags.entrySet().stream().
+                // Convert from Entry<String:color,Integer:count> -> count + (count* children-count(current_color))
+                        map(e -> e.getValue() + (e.getValue() * countChildrenBags(totalRules, e.getKey()))).
+                        reduce(Integer::sum).orElse(0);
     }
 
     public static long part2(List<BagRule> bagRules) {
