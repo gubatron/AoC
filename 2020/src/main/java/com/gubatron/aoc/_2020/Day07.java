@@ -87,13 +87,7 @@ public class Day07 {
         int totalBags = 0;
         for (String inner_bag_color : colors) {
             int inner_bag_count = targetRule.containedBags.get(inner_bag_color);
-            // Add Direct Children
-            totalBags = totalBags + (inner_bag_count);
-        }
-        for (String inner_bag_color : colors) {
-            // Multiply current level by the children found
-            int inner_bag_count = targetRule.containedBags.get(inner_bag_color);
-            totalBags += inner_bag_count * countChildrenBags(totalRules, inner_bag_color);
+            totalBags = totalBags + (inner_bag_count) + (inner_bag_count * countChildrenBags(totalRules, inner_bag_color));
         }
         return totalBags;
     }
