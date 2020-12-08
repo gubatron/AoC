@@ -46,14 +46,12 @@ public class Day08 {
         PC = 0;
         while (PC < instructions.size()) {
             Instruction instruction = instructions.get(PC);
-            if (instruction.timesExecuted > 1) {
+            if (instruction.timesExecuted == 1) {
                 break;
             }
-
             instruction.timesExecuted++;
             if (instruction.code == Code.NOP) {
                 PC++;
-
             } else if (instruction.code == Code.ACC) {
                 PC++;
                 ACCUMULATOR += instruction.argument;
@@ -110,6 +108,4 @@ public class Day08 {
         System.out.println("==============================");
         System.out.println("Part 2: " + part2(lines)); // 1121
     }
-
-
 }
