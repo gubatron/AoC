@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BinaryOperator;
+import java.util.stream.Stream;
 
 import static com.gubatron.aoc._2020.Utils.readStringsBySeparator;
 
@@ -248,14 +250,8 @@ public class Day11 {
         return layout.stream().map(row -> row.stream().filter(cell -> cell.state == state).count()).reduce(Long::sum).orElse(0L);
     }
 
-    private static long flipCells(List<List<Cell>> layout) {
-        long flipped = 0;
-        for (List<Cell> row : layout) {
-            for (Cell cell : row) {
-                flipped += cell.flip(); // it won't flip if it doesn't need to and return 0.
-            }
-        }
-        return flipped;
+    private static int flipCells(List<List<Cell>> layout) {
+        return layout.stream().flatMap(row -> row.stream().map(Cell::flip)).reduce(Integer::sum).orElse(0);
     }
 
     public static long part1(final List<List<Cell>> layout) {
