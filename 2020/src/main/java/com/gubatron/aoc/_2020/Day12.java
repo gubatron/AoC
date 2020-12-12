@@ -218,7 +218,7 @@ public class Day12 {
     public static void main(String[] args) throws IOException {
         //List<String> lines = readStringsBySeparator(new File("resources/sample_day_12.txt"), "\n");
         List<String> lines = readStringsBySeparator(new File("resources/input_day_12.txt"), "\n");
-        List<NavInstruction> instructions = lines.stream().map(inst -> new NavInstruction(inst)).collect(Collectors.toList());
+        List<NavInstruction> instructions = lines.stream().map(NavInstruction::new).collect(Collectors.toList());
 
         System.out.println("DAY 12 - Rain Risk");
         System.out.println("Part 1: " + part1(instructions)); // 998
