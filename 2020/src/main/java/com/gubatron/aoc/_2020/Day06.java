@@ -23,6 +23,7 @@ public class Day06 {
             if (answers.size() == 1) {
                 return answers.get(0).length();
             }
+
             Map<Integer, Integer> commonChars = new HashMap<>();
             answers.forEach(s -> {
                 s.chars().boxed().forEach(c ->
