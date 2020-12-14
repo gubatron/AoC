@@ -84,7 +84,6 @@ public class Day14 {
         List<Long> getFloatingMemoryAddresses() {
             List<Long> addresses = new ArrayList<>();
             int possibleAddresses = (int) Math.pow(2, floatAddressMaskedBitOffsets.size());
-            //System.out.println("POSSIBLE ADDRESSES: " + possibleAddresses);
             for (int i = 0; i < possibleAddresses; i++) {
                 // Create all the possible numbers from 0 to N
                 // Convert to binary and insert into 0 padded char[]
