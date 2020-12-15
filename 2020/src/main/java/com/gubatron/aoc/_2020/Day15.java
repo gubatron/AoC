@@ -68,6 +68,6 @@ public class Day15 {
             }
             turn++;
         }
-        return spokenNumbers.get(spokenNumbers.size() - 1);
+        return last_number;
     }
 }
