@@ -34,7 +34,7 @@ public class Day18 {
                     if (currentGroup.readyToOperate) {
                         operate();
                     }
-                } else if (C == '+' || C == '-' || C == '*') {
+                } else if (C == '+' || C == '*') {
                     currentGroup.readyToOperate = true;
                     currentGroup.operators.push(C);
                 } else {
