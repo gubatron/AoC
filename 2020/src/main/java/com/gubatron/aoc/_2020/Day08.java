@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import static com.gubatron.aoc._2020.Utils.readStringsBySeparator;
 
 public class Day08 {
-
     enum Code {
         ACC,
         JMP,
@@ -22,7 +21,6 @@ public class Day08 {
         int timesExecuted = 0;
     }
 
-
     static int ACCUMULATOR = 0;
     static int PC = 0;
 
@@ -32,9 +30,15 @@ public class Day08 {
             String[] s = cleanLine.split(" ");
             Instruction inst = new Instruction();
             switch (s[0]) {
-                case "jmp" -> inst.code = Code.JMP;
-                case "acc" -> inst.code = Code.ACC;
-                case "nop" -> inst.code = Code.NOP;
+                case "jmp":
+                    inst.code = Code.JMP;
+                    break;
+                case "acc":
+                    inst.code = Code.ACC;
+                    break;
+                case "nop":
+                    inst.code = Code.NOP;
+                    break;
             }
             inst.argument = Integer.parseInt(s[1]);
             return inst;
@@ -78,7 +82,6 @@ public class Day08 {
             }
             i++;
         }
-
         for (Integer candidateInstructionIndex : candidateIndices) {
             PC = 0;
             ACCUMULATOR = 0;

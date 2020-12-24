@@ -11,7 +11,7 @@ compileJava {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(15)
+        languageVersion = JavaLanguageVersion.of(12)
     }
 }
 
@@ -24,7 +24,7 @@ sourceSets {
 }
 
 ext {
-    javaMainClass = "com.gubatron.aoc._2020.Day17"
+    javaMainClass = "com.gubatron.aoc._2020.Day20"
 }
 
 application {
