@@ -23,10 +23,6 @@ sourceSets {
     }
 }
 
-ext {
-    javaMainClass = "com.gubatron.aoc._2020.Day20"
-}
-
 application {
-    mainClassName = javaMainClass
+    mainClass.set("com.gubatron.aoc._2020.Day24")
 }
