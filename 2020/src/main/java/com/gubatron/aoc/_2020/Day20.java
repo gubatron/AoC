@@ -115,7 +115,7 @@ public class Day20 {
         void matchTiles() {
             idMap.keySet().forEach(this::findMatches);
             System.out.println("========================================");
-            idMap.keySet().forEach(tileID -> System.out.printf("Tile %d has %d matches\n", tileID, matches.get(tileID).size()));
+            //idMap.keySet().forEach(tileID -> System.out.printf("Tile %d has %d matches\n", tileID, matches.get(tileID).size()));
             List<Tile> unmatched = matches.keySet().stream().filter(id -> matches.get(id).size() == 0).map(id -> idMap.get(id)).collect(Collectors.toList());
             if (unmatched.size() > 0) {
                 // Rotate all unmatched and try finding their matches
@@ -133,12 +133,9 @@ public class Day20 {
                     Set<Long> matchesForMyTile = matches.get(tileId);
                     Set<Long> matchesForOtherTile = matches.get(otherId);
                     if (matchedSides > 0) {
-                        System.out.printf("Tile %d matched %d sides with Tile %d\n", myTile.id, matchedSides, otherId);
+                        //System.out.printf("Tile %d matched %d sides with Tile %d\n", myTile.id, matchedSides, otherId);
                         matchesForMyTile.add(otherId);
                         matchesForOtherTile.add(tileId);
-                    } else {
-                        // We need to rotate and try again :)
-                        System.out.printf("Tile %d had no matches\n", tileId);
                     }
                 }
             });
@@ -210,7 +207,7 @@ public class Day20 {
         List<Tile> tiles = loadTiles(lines);
         System.out.printf("Loaded %d tiles.\n", tiles.size());
         System.out.println("DAY 20 - Jurassic Jigsaw");
-        System.out.println("Part 1: " + part1(tiles)); //84116744709593 / 639ms
+        System.out.println("Part 1: " + part1(tiles)); //84116744709593 / 205ms
         System.out.println("==============================");
         System.out.println("Part 2: " + part2());
     }

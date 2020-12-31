@@ -35,18 +35,18 @@ public class Day21 {
                 allergens_candidate_ingredients.remove(def_allergen);
 
                 HashMap<String, List<List<String>>> new_allergens_candidate_ingredients = new HashMap<>();
-                allergens_candidate_ingredients.forEach((other_aller, ing_lists) -> {
-                    ing_lists.forEach(ing_list -> {
-                                final List<String> cleanedUpList = ing_list.stream().
-                                        filter(ing -> !ing.equals(def_ingredient)).
-                                        collect(Collectors.toList());
-                                if (!new_allergens_candidate_ingredients.containsKey(other_aller)) {
-                                    new_allergens_candidate_ingredients.put(other_aller, new ArrayList<>());
-                                }
-                                new_allergens_candidate_ingredients.get(other_aller).add(cleanedUpList);
-                            }
-                    );
-                });
+                allergens_candidate_ingredients.forEach(
+                        (other_aller, ing_lists) ->
+                                ing_lists.forEach(ing_list -> {
+                                            final List<String> cleanedUpList = ing_list.stream().
+                                                    filter(ing -> !ing.equals(def_ingredient)).
+                                                    collect(Collectors.toList());
+                                            if (!new_allergens_candidate_ingredients.containsKey(other_aller)) {
+                                                new_allergens_candidate_ingredients.put(other_aller, new ArrayList<>());
+                                            }
+                                            new_allergens_candidate_ingredients.get(other_aller).add(cleanedUpList);
+                                        }
+                                ));
                 allergens_candidate_ingredients.clear();
                 allergens_candidate_ingredients.putAll(new_allergens_candidate_ingredients);
             });
@@ -65,7 +65,7 @@ public class Day21 {
     public static String part2(HashMap<String, String> definite_allergen_ingredient) {
         List<String> sorted_allergens = definite_allergen_ingredient.keySet().stream().sorted().collect(Collectors.toList());
         String ingredients = sorted_allergens.stream().map(allergen -> definite_allergen_ingredient.get(allergen) + ",").reduce(String::concat).get();
-        return ingredients.substring(0, ingredients.length()-1);
+        return ingredients.substring(0, ingredients.length() - 1);
     }
 
     public static void main(String[] args) throws IOException {
@@ -93,8 +93,6 @@ public class Day21 {
                 }
             });
         });
-
-
 
         System.out.println("DAY 21 - Allergen Assessment");
         long t_a = System.currentTimeMillis();

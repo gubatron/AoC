@@ -142,11 +142,12 @@ public class Day22 {
             long result = 0;
             for (Integer card : cards) {
                 if (firstLine) {
+                    firstLine = false;
                     System.out.printf("  %2d * %2d\n", card, maxMultiplier);
                 } else {
                     System.out.printf("+ %2d * %2d\n", card, maxMultiplier);
                 }
-                result += card * maxMultiplier--;
+                result += (long) card * maxMultiplier--;
             }
             System.out.printf("=%d\n", result);
             return result;
@@ -180,6 +181,6 @@ public class Day22 {
         System.out.println("Part 1: " + part1(crabCombat)); // 34566
         System.out.println("==============================");
         crabCombat = new CrabCombat(lines);
-        System.out.println("Part 2: " + part2(crabCombat));
+        System.out.println("Part 2: " + part2(crabCombat)); // 31854
     }
 }
