@@ -2,7 +2,6 @@ package com.gubatron.aoc._2020;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -26,7 +25,6 @@ public class Day24 {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (!(o instanceof Coordinate)) return false;
             Coordinate that = (Coordinate) o;
             return x == that.x && y == that.y && z == that.z;
         }
@@ -34,15 +32,6 @@ public class Day24 {
         @Override
         public int hashCode() {
             return Objects.hash(x, y, z);
-        }
-
-        @Override
-        public String toString() {
-            return "Coordinate{" +
-                    "x=" + x +
-                    ", y=" + y +
-                    ", z=" + z +
-                    '}';
         }
     }
 
@@ -115,7 +104,9 @@ public class Day24 {
         return countBlackTiles(tiles);
     }
 
-    private static int countBlackNbrs(Coordinate coord, HashMap<Coordinate, Boolean> tiles, HashMap<Coordinate, Boolean> newTiles) {
+    private static int countBlackNbrs(Coordinate coord,
+                                      HashMap<Coordinate, Boolean> tiles,
+                                      HashMap<Coordinate, Boolean> newTiles) {
         int blacks = 0;
         int[][] deltas = new int[][]{
                 new int[]{1, -1, 0},
@@ -132,32 +123,11 @@ public class Day24 {
                 if (tiles.get(nbr)) {
                     blacks++;
                 }
-            } else {
+            } else if (newTiles != null) {
                 newTiles.put(nbr, false);
             }
         }
         return blacks;
-    }
-
-    private static void addNewNbrs(Coordinate coord,
-                                   HashMap<Coordinate, Boolean> tiles,
-                                   HashMap<Coordinate, Boolean> newTiles) {
-        int blacks = 0;
-        int[][] deltas = new int[][]{
-                new int[]{1, -1, 0},
-                new int[]{0, -1, 1},
-                new int[]{-1, 0, 1},
-                new int[]{-1, 1, 0},
-                new int[]{0, 1, -1},
-                new int[]{1, 0, -1},
-        };
-
-        Arrays.stream(deltas).forEach(delta -> {
-            Coordinate nbr = new Coordinate(coord.x + delta[0], coord.y + delta[1], coord.z + delta[2]);
-            if (!tiles.containsKey(nbr)) {
-                newTiles.put(nbr, false);
-            }
-        });
     }
 
     public static long part2(Stream<Coordinate> coordinateStream) {
@@ -166,12 +136,12 @@ public class Day24 {
         for (int day = 1; day <= 100; day++) {
             HashMap<Coordinate, Boolean> flips = new HashMap<>();
             final HashMap<Coordinate, Boolean> newTiles = new HashMap<>();
-            tiles.forEach((tile,isBlack) -> addNewNbrs(tile,tiles,newTiles));
+            tiles.forEach((tile, isBlack) -> countBlackNbrs(tile, tiles, newTiles)); // adds new neighbors to the perimeter
             newTiles.forEach(tiles::put);
             newTiles.clear();
 
             tiles.forEach((coord, isBlack) -> {
-                int numBlackNbrs = countBlackNbrs(coord, tiles, newTiles);
+                int numBlackNbrs = countBlackNbrs(coord, tiles, null); // the new tiles found here are irrelevant
                 if (isBlack && (numBlackNbrs == 0 || numBlackNbrs > 2)) {
                     flips.put(coord, false);
                 } else if (!isBlack && numBlackNbrs == 2) {
