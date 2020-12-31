@@ -2,6 +2,7 @@ package com.gubatron.aoc._2020;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -67,12 +68,11 @@ public class Day24 {
                         if (line.charAt(i++) == 'e') {
                             //ne
                             x++;
-                            z--;
                         } else {
                             //nw
                             y++;
-                            z--;
                         }
+                        z--;
                     } else {
                         System.out.println(line);
                         throw new RuntimeException();
@@ -83,12 +83,11 @@ public class Day24 {
                         if (line.charAt(i++) == 'e') {
                             //se
                             y--;
-                            z++;
                         } else {
                             //sw
                             x--;
-                            z++;
                         }
+                        z++;
                     }
                     break;
             }
@@ -96,20 +95,97 @@ public class Day24 {
         return new Coordinate(x, y, z);
     }
 
-    public static long part1(Stream<Coordinate> coordinateStream) {
-        HashMap<Coordinate, Boolean> tiles = new HashMap<>();
+    private static void initialFlip(Stream<Coordinate> coordinateStream, HashMap<Coordinate, Boolean> tiles) {
         coordinateStream.forEach(coord -> {
             if (tiles.containsKey(coord)) {
                 tiles.put(coord, !tiles.get(coord));
             } else {
-                tiles.put(coord, false);
+                tiles.put(coord, true); // black == true
             }
         });
-        return tiles.values().stream().filter(b -> !b).count();
+    }
+
+    private static long countBlackTiles(HashMap<Coordinate, Boolean> tiles) {
+        return tiles.values().stream().filter(b -> b).count();
+    }
+
+    public static long part1(Stream<Coordinate> coordinateStream) {
+        HashMap<Coordinate, Boolean> tiles = new HashMap<>();
+        initialFlip(coordinateStream, tiles);
+        return countBlackTiles(tiles);
+    }
+
+    private static int countBlackNbrs(Coordinate coord, HashMap<Coordinate, Boolean> tiles, HashMap<Coordinate, Boolean> newTiles) {
+        int blacks = 0;
+        int[][] deltas = new int[][]{
+                new int[]{1, -1, 0},
+                new int[]{0, -1, 1},
+                new int[]{-1, 0, 1},
+                new int[]{-1, 1, 0},
+                new int[]{0, 1, -1},
+                new int[]{1, 0, -1},
+        };
+
+        for (int[] delta : deltas) {
+            Coordinate nbr = new Coordinate(coord.x + delta[0], coord.y + delta[1], coord.z + delta[2]);
+            if (tiles.containsKey(nbr)) {
+                if (tiles.get(nbr)) {
+                    blacks++;
+                }
+            } else {
+                newTiles.put(nbr, false);
+            }
+        }
+        return blacks;
+    }
+
+    private static void addNewNbrs(Coordinate coord,
+                                   HashMap<Coordinate, Boolean> tiles,
+                                   HashMap<Coordinate, Boolean> newTiles) {
+        int blacks = 0;
+        int[][] deltas = new int[][]{
+                new int[]{1, -1, 0},
+                new int[]{0, -1, 1},
+                new int[]{-1, 0, 1},
+                new int[]{-1, 1, 0},
+                new int[]{0, 1, -1},
+                new int[]{1, 0, -1},
+        };
+
+        Arrays.stream(deltas).forEach(delta -> {
+            Coordinate nbr = new Coordinate(coord.x + delta[0], coord.y + delta[1], coord.z + delta[2]);
+            if (!tiles.containsKey(nbr)) {
+                newTiles.put(nbr, false);
+            }
+        });
     }
 
     public static long part2(Stream<Coordinate> coordinateStream) {
-        return 0;
+        HashMap<Coordinate, Boolean> tiles = new HashMap<>();
+        initialFlip(coordinateStream, tiles);
+        for (int day = 1; day <= 100; day++) {
+            HashMap<Coordinate, Boolean> flips = new HashMap<>();
+            final HashMap<Coordinate, Boolean> newTiles = new HashMap<>();
+            tiles.forEach((tile,isBlack) -> addNewNbrs(tile,tiles,newTiles));
+            newTiles.forEach(tiles::put);
+            newTiles.clear();
+
+            tiles.forEach((coord, isBlack) -> {
+                int numBlackNbrs = countBlackNbrs(coord, tiles, newTiles);
+                if (isBlack && (numBlackNbrs == 0 || numBlackNbrs > 2)) {
+                    flips.put(coord, false);
+                } else if (!isBlack && numBlackNbrs == 2) {
+                    flips.put(coord, true);
+                }
+            });
+
+            // flip em
+            flips.forEach(tiles::put);
+            if (day <= 10 || (((day) % 10) == 0)) {
+                System.out.printf("Day %d: %d\n", day, countBlackTiles(tiles));
+            }
+        }
+        return countBlackTiles(tiles);
     }
 
     public static void main(String[] args) throws IOException {
@@ -118,13 +194,15 @@ public class Day24 {
         System.out.println("DAY 24 - Lobby Layout");
         long start_t = System.currentTimeMillis();
         Stream<Coordinate> coordinateStream = lines.stream().map(Day24::lineToCoordinate);
-        System.out.println("Part 1: " + part1(coordinateStream));
+        System.out.println("Part 1: " + part1(coordinateStream));  // 228
         long end_t = System.currentTimeMillis() - start_t;
-        System.out.printf("%d ms\n", end_t); // 228
+        System.out.printf("%d ms\n", end_t);
         System.out.println("==============================");
+
+        coordinateStream = lines.stream().map(Day24::lineToCoordinate);
         start_t = System.currentTimeMillis();
-        System.out.println("Part 2: " + part2(coordinateStream));
+        System.out.println("Part 2: " + part2(coordinateStream)); // 3672
         end_t = System.currentTimeMillis() - start_t;
-        System.out.printf("%d ms\n", end_t); // 228
+        System.out.printf("%d ms\n", end_t);
     }
 }
