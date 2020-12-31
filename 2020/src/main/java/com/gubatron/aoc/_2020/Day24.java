@@ -96,24 +96,13 @@ public class Day24 {
         return new Coordinate(x, y, z);
     }
 
-    static int whites = 0;
-    static int blacks = 0;
-
     public static long part1(Stream<Coordinate> coordinateStream) {
         HashMap<Coordinate, Boolean> tiles = new HashMap<>();
         coordinateStream.forEach(coord -> {
             if (tiles.containsKey(coord)) {
-                if (!tiles.get(coord)) {
-                    whites++;
-                    blacks--;
-                } else {
-                    blacks++;
-                    whites--;
-                }
                 tiles.put(coord, !tiles.get(coord));
             } else {
                 tiles.put(coord, false);
-                blacks++;
             }
         });
         return tiles.values().stream().filter(b -> !b).count();
