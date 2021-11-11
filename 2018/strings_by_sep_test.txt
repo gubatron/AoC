@@ -1,0 +1,5 @@
+I want to be 
+ able - to separate all 
+the strings in here - by the hyphen 
+character 
+even if I have lots of lines - The End
