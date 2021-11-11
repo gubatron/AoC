@@ -1,4 +1,4 @@
-package foobar.level2;
+package level2;
 
 import java.util.Arrays;
 import java.util.regex.Matcher;
@@ -84,5 +84,9 @@ public class Solution {
         Arrays.stream(solution(new String[]{"1.1.2", "1.0", "1.3.3", "1.0.12", "1.0.2"})).forEach(v -> {
             System.out.print(v + ",");
         });
+    }
+
+    public static void main(String[] args) {
+        tests();
     }
 }
