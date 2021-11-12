@@ -13,7 +13,7 @@ repositories {
     mavenCentral()
 }
 
-mainClassName = "level2.Solution"
+mainClassName = "level2_1.Solution"
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
