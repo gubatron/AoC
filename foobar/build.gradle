@@ -1,13 +1,19 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group 'org.gubatron.aoc._2020'
 version '1.0-SNAPSHOT'
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 repositories {
     mavenCentral()
 }
+
+mainClassName = "level2.Solution"
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
