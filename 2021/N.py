@@ -1,4 +1,4 @@
-from aoc import *
+import aoc
 
 ans1=0
 ans2=0
