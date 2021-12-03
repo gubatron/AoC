@@ -1,16 +1,17 @@
 import aoc
 
 instructions = aoc.readFileToStringList("2.1.txt")
-horizontal=0
-depth=0
-aim=0
+horizontal = 0
+depth = 0
+aim = 0
 
 #instructions = ["forward 5","down 5","forward 8","up 3","down 8","forward 2"]
 
+
 def process_instruction(inst):
     global horizontal, depth
-    [action,step]=(inst.split())
-    step=int(step)
+    [action, step] = (inst.split())
+    step = int(step)
     if action == 'forward':
         horizontal += step
     if action == 'up':
@@ -18,19 +19,20 @@ def process_instruction(inst):
     if action == 'down':
         depth += step
 
-for inst in instructions:
-    process_instruction(inst)
 
-ans1=depth*horizontal
+list(map(process_instruction, instructions))
 
-horizontal=0
-depth=0
-aim=0
+ans1 = depth * horizontal
+
+horizontal = 0
+depth = 0
+aim = 0
+
 
 def process_instruction2(inst):
     global horizontal, depth, aim
-    [action,step]=(inst.split())
-    step=int(step)
+    [action, step] = (inst.split())
+    step = int(step)
     if action == 'forward':
         horizontal += step
         depth += aim * step
@@ -39,10 +41,10 @@ def process_instruction2(inst):
     if action == 'down':
         aim += step
 
-for inst in instructions:
-    process_instruction2(inst)
 
-ans2=depth*horizontal
+list(map(process_instruction2, instructions))
 
-print("ans1={}".format(ans1))
-print("ans2={}".format(ans2))
+ans2 = depth * horizontal
+
+print("ans1={}".format(ans1))  # ans1=1868935
+print("ans2={}".format(ans2))  # ans2=1965970888
