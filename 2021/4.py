@@ -45,10 +45,7 @@ class BingoBoard:
 
         # now check columns
         for column in range(5):
-            total = 0
-            for row in range(5):
-                total += self.markedRows[row][column]
-            if total == 5:
+            if sum(row[column] for row in self.markedRows) == 5:
                 self.__bingoed = True
                 return True
         return False
