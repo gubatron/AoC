@@ -21,7 +21,6 @@ class BingoBoard:
     def __init__(self) -> None:
         self.numRows = []
         self.reset()
-        pass
 
     def bingoed(self):
         return self.__bingoed
@@ -69,12 +68,6 @@ class BingoBoard:
                 if self.markedRows[row][column] == 0:
                     total += self.numRows[row][column]
         return total
-
-    def __str__(self) -> str:
-        return str(list(map(str, zip(self.numRows, self.markedRows)))) + "\n\n"
-
-    def __repr__(self) -> str:
-        return self.__str__()
 
 # Load Bingo Boards
 i = 0
