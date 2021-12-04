@@ -1,21 +1,13 @@
 import aoc
 # Giant Squid (Bingo)
-ANS1 = 0
-ANS2 = 0
-
-#input = aoc.readFileToStringList("4.test.txt")
 input = aoc.readFileToStringList("4.1.txt")
-
-# first line, convert to str list, then int list
 bingoNumbers = list(map(int, input[0].split(',')))
 
-# rest of document:
-# - filter out empty lines
-# - then split each line by spaces and convert to int lists
-# You end up with a list that should have a multiple of 5 given each board has 5 rows.
+# filter out empty lines, then split each line by spaces and convert to int lists
 bingoBoardsData = list(
     map(lambda line: list(map(int, line.split())),
         filter(lambda line: len(line) > 0, input[2:])))
+
 
 class BingoBoard:
     def __init__(self) -> None:
@@ -69,18 +61,18 @@ class BingoBoard:
                     total += self.numRows[row][column]
         return total
 
+
 # Load Bingo Boards
 i = 0
 bingoBoards = []
 bufferBoard = BingoBoard()
 for row in bingoBoardsData:
     bufferBoard.addRow(row)
-    if i == 4:
+    i += 1
+    if i == 5:
         bingoBoards.append(bufferBoard)
         bufferBoard = BingoBoard()
         i = 0
-    else:
-        i += 1
 
 
 def playBingo(bingoNumbers, bingoBoards, returnLastBoardToWin=False):
@@ -101,11 +93,11 @@ def playBingo(bingoNumbers, bingoBoards, returnLastBoardToWin=False):
 # Part 1
 number, winningBoard = playBingo(bingoNumbers, bingoBoards)
 ANS1 = winningBoard.sumUnmarkedNumbers() * number
-print("ans1={}".format(ANS1)) # ans1=22680
+print("ans1={}".format(ANS1))  # ans1=22680
 
 # Part 2
 for board in bingoBoards:
     board.reset()
 number, winningBoard = playBingo(bingoNumbers, bingoBoards, True)
 ANS2 = winningBoard.sumUnmarkedNumbers() * number
-print("ans2={}".format(ANS2)) # ans2=16168
+print("ans2={}".format(ANS2))  # ans2=16168
