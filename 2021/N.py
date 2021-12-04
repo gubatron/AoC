@@ -1,7 +1,7 @@
 import aoc
 
-ans1=0
-ans2=0
+ANS1=0
+ANS2=0
 
-print("ans1={}".format(ans1))
-print("ans2={}".format(ans2))
+print("ans1={}".format(ANS1))
+print("ans2={}".format(ANS2))
