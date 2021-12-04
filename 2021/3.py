@@ -29,13 +29,7 @@ def mostCommonBits(report):
 
 
 def invertBinaryString(s):
-    r = ""
-    for c in s:
-        if c == '1':
-            r += '0'
-        else:
-            r += '1'
-    return r
+    return ''.join('1' if x == '0' else '0' for x in s)
 
 
 # PART 1
