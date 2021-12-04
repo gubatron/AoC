@@ -76,18 +76,18 @@ class BingoBoard:
     def __repr__(self) -> str:
         return self.__str__()
 
-
-bingoBoards = []
+# Load Bingo Boards
 i = 0
-bufferBoard = None
+bingoBoards = []
+bufferBoard = BingoBoard()
 for row in bingoBoardsData:
-    if i == 0:
-        bufferBoard = BingoBoard()
     bufferBoard.addRow(row)
-    i += 1
-    if i == 5:
+    if i == 4:
         bingoBoards.append(bufferBoard)
+        bufferBoard = BingoBoard()
         i = 0
+    else:
+        i += 1
 
 
 def playBingo(bingoNumbers, bingoBoards, returnLastBoardToWin=False):

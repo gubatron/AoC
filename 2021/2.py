@@ -10,7 +10,7 @@ aim = 0
 
 def process_instruction(inst):
     global horizontal, depth
-    [action, step] = (inst.split())
+    action, step = (inst.split())
     step = int(step)
     if action == 'forward':
         horizontal += step
@@ -31,7 +31,7 @@ aim = 0
 
 def process_instruction2(inst):
     global horizontal, depth, aim
-    [action, step] = (inst.split())
+    action, step = (inst.split())
     step = int(step)
     if action == 'forward':
         horizontal += step
