@@ -62,17 +62,9 @@ def oxygenGeneratorRating(report, i):
 
 
 def leastCommonBitAt(report, i):
-    n = len(report)
-    ones = 0
-    zeroes = 0
-    for x in report:
-        if x[i] == '1':
-            ones += 1
-        else:
-            zeroes += 1
-    if zeroes > ones:
-        return '1'
-    return '0'
+    if mostCommonBitAt(report, i) == '1':
+        return '0'
+    return '1'
 
 
 def CO2ScrubberRating(report, i):
