@@ -5,8 +5,8 @@ segments = list(
         lambda line: list(
             map(lambda pStr: list(map(int, pStr.split(','))), line.split(
                 ' -> '))), data))
-X = START = 0
-Y = END = 1
+START = 0
+END = 1
 class Point:
     def __init__(self, p: list[int]) -> None:
         self.x = p[0]
@@ -104,8 +104,7 @@ for seg in segments:
     b = Point(seg[END])
     midPoints = generatePointsBetween2(a, b)
     if len(midPoints) > 0:
-        trayectory = [a] + midPoints + [b]
-        list(map(lambda p: updatePoints(points, p), trayectory))
+        list(map(lambda p: updatePoints(points, p), [a] + midPoints + [b]))
     elif midPoints != None:
         updatePoints(points, a)
         updatePoints(points, b)
