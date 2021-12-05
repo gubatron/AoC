@@ -27,44 +27,7 @@ def updatePoints(points: dict[str, int], p: Point) -> None:
     else:
         points[str(p)] = 1
 
-def generatePointsBetween(a: Point, b: Point) -> set[Point]:
-    midPoints = []
-    c = Point([a.x, a.y])
-    if a.x == b.x:  # vertical segment.
-        delta = -1
-        if b.y > a.y:
-            delta = 1
-        while c.y != b.y - delta:
-            c.y += delta
-            midPoints.append(Point([c.x, c.y]))
-        return midPoints
-    elif a.y == b.y:  # horizontal segment.
-        delta = -1
-        if b.x > a.x:
-            delta = 1
-        while c.x != b.x - delta:
-            c.x += delta
-            midPoints.append(Point([c.x, c.y]))
-        return midPoints
-    return None
-
-# PART 1.
-points = {}
-for seg in segments:
-    a = Point(seg[START])
-    b = Point(seg[END])
-    midPoints = generatePointsBetween(a, b)
-    if midPoints != None:
-        updatePoints(points, a)
-        updatePoints(points, b)
-        if len(midPoints) > 0:
-            list(map(lambda p: updatePoints(points, p), midPoints))
-
-ANS1 = len({k: v for k, v in points.items() if v > 1})
-print("ans1={}".format(ANS1))  # ans1=7085
-
-# PART 2.
-def generatePointsBetween2(a: Point, b: Point) -> set[Point]:
+def generatePointsBetween(a: Point, b: Point, doDiagonals: bool) -> set[Point]:
     midPoints = []
     c = Point([a.x, a.y])
     if a.x == b.x:  # vertical segment.
@@ -83,7 +46,7 @@ def generatePointsBetween2(a: Point, b: Point) -> set[Point]:
             c.x += delta
             midPoints.append(Point([c.x, c.y]))
         return midPoints
-    if abs(a.x - b.x) == abs(a.y - b.y):  # diagonal segment
+    if doDiagonals and abs(a.x - b.x) == abs(a.y - b.y):  # diagonal segment
         # lets always go from a to b
         deltaX = -1
         deltaY = -1
@@ -98,16 +61,26 @@ def generatePointsBetween2(a: Point, b: Point) -> set[Point]:
         return midPoints
     return None
 
-points = {}
-for seg in segments:
-    a = Point(seg[START])
-    b = Point(seg[END])
-    midPoints = generatePointsBetween2(a, b)
-    if len(midPoints) > 0:
-        list(map(lambda p: updatePoints(points, p), [a] + midPoints + [b]))
-    elif midPoints != None:
+
+def genPoints(a:Point,b:Point,points:dict,considerDiagonals:bool):
+    midPoints = generatePointsBetween(a, b, considerDiagonals)
+    if midPoints != None:
         updatePoints(points, a)
         updatePoints(points, b)
+        if len(midPoints) > 0:
+            list(map(lambda p: updatePoints(points, p), midPoints))
 
-ANS2 = len({k: v for k, v in points.items() if v > 1})
+# PART 1.
+points = {}
+points2 = {}
+def f(seg):
+      a = Point(seg[START])
+      b = Point(seg[END])
+      genPoints(a,b,points,False)
+      genPoints(a,b,points2,True)
+list(map(f,segments))
+
+ANS1 = len({k: v for k, v in points.items() if v > 1})
+print("ans1={}".format(ANS1))  # ans1=7085
+ANS2 = len({k: v for k, v in points2.items() if v > 1})
 print("ans2={}".format(ANS2)) # ans2=20271
