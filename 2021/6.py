@@ -1,7 +1,7 @@
 import aoc
 
-ages = list(map(int, aoc.readFileToStringList("6.1.txt")[0].split(",")))
-fish_map = {}
+ages = list(map(int, aoc.readFileToStringList("6.test.txt")[0].split(",")))
+fish_map = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0}
 
 for age in ages:
     if age not in fish_map:
@@ -12,12 +12,13 @@ for day in range(257):
     print(f"Day {day}, n={sum(fish_map.values())}")
     if day == 80:
         ANS1 = sum(fish_map.values())
-        print(ANS1)
     if day == 256:
         ANS2 = sum(fish_map.values())
 
     new_fish = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0}
-    for age, num_fish in fish_map.items():
+    items = fish_map.items()
+    for age in range(9):
+        num_fish = fish_map[age]
         if age == 0:
             new_fish[6] += num_fish
             new_fish[8] += num_fish
