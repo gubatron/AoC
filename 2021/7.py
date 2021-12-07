@@ -9,7 +9,7 @@ totalFuel1 = 0
 totalFuel2 = 0
 for crabPos in crabPositions:
     totalFuel1 += abs(crabPos - median)
-    totalFuel2 += sum(list(range(1, 1 + abs(crabPos - mean))))
+    totalFuel2 += sum(range(1, 1 + abs(crabPos - mean)))
 ANS1 = totalFuel1
 ANS2 = totalFuel2
 print("ans1={}".format(ANS1))  # ans1=364898
