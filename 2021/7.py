@@ -1,8 +1,8 @@
 from math import floor
-import statistics
+from statistics import median, mean
 import aoc
 crabPositions = list(map(int, aoc.readFileToStringList("7.txt")[0].split(',')))
-median,mean = int(statistics.median(crabPositions)), floor(statistics.mean(crabPositions))
+median,mean = int(median(crabPositions)), floor(mean(crabPositions))
 ANS1 = ANS2 = 0
 for crabPos in crabPositions:
     ANS1 += abs(crabPos - median)
