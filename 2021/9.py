@@ -51,15 +51,14 @@ def findLows(G, includeCoordinates=False):
     return lows
 
 lows = findLows(G)
-ANS1=sum_risk_levels = sum(map(lambda x:x+1, lows)) # 588
+ANS1=sum_risk_levels = sum(map(lambda x:x+1, lows))
 lows_w_coords = findLows(G,True)
 # BFS
 def findBasin(G,i,j):
     basin=[]
     queue=[]
     me = G[i][j]
-    if str((i,j)) not in basin:
-        basin.append((i,j))
+    basin.append((i,j))
     queue.append((i,j))
     while queue:
       s = queue.pop(0)
@@ -75,5 +74,5 @@ for low_coord in lows_w_coords:
     basins.append(findBasin(G, low_coord[1][0], low_coord[1][1]))
 
 ANS2 = reduce(lambda x,y: x * y, list(map(len,sorted(basins,key=len,reverse=True)[0:3])))
-print("ans1={}".format(ANS1))
+print("ans1={}".format(ANS1)) # 588
 print("ans2={}".format(ANS2)) # 964712
