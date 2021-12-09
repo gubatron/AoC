@@ -49,7 +49,7 @@ number_to_segments = {
 segments_to_number = {str(v): k for k, v in number_to_segments.items()}
 
 
-def decode(signal, decoding_map) -> list[int]:
+def decode(signal, decoding_map) :#-> list[int]:
     global sigs2num, number_to_segments, segments_to_number
     decoded = []
     for letters in signal:
