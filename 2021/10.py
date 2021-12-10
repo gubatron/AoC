@@ -83,4 +83,4 @@ middle = int(len(autocompletion_scores) / 2)
 ANS2 = autocompletion_scores[middle]
 
 print("ans1={}".format(ANS1))  # 436497
-print("ans2={}".format(ANS2))
+print("ans2={}".format(ANS2)) # 2377613374
