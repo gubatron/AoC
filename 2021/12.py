@@ -1,7 +1,7 @@
 import aoc
 
 graph = {}
-paths = aoc.readFileToStringList("12.test.txt")
+paths = aoc.readFileToStringList("12.txt")
 
 for path in paths:
     a, b = path.split('-')
