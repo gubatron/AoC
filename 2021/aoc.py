@@ -48,6 +48,46 @@ def printMatrix(G, message=None):
     print()
 
 
+def DFS(GRAPH, source, target):
+    'Use a STACK to search.'
+    stack = [source]
+    visited = []
+
+    while len(stack) > 0:
+        x = stack.pop(0)
+
+        if x == target:
+            visited.append(x)
+            return visited
+        elif x not in visited:
+            visited = visited + [x]
+            if GRAPH[x] is not None:
+                'add nodes at the top of the stack'
+                stack = GRAPH[x] + stack
+
+    return visited
+
+
+def BFS(source, target, GRAPH):
+    'Use a QUEUE to search.'
+    queue = [source]
+    visited = []
+
+    while len(queue) > 0:
+        x = queue.pop(0)
+
+        if x == target:
+            visited.append(x)
+            return visited
+        elif x not in visited:
+            visited = visited + [x]
+            if GRAPH[x] is not None:
+                'add nodes at the END of the queue'
+                queue = queue + GRAPH[x]
+
+    return visited
+
+
 if __name__ == '__main__':
     print(readStringsBySeparator('strings_by_sep_test.txt', '-'))
     print(readIntList('int_list.txt'))
