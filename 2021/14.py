@@ -12,35 +12,35 @@ for r in data[2:]:
 
 
 def initDB(template):
-    database = Counter()
+    counter = Counter()
     for i in range(len(template) - 1):
         pair = template[i:i + 2]
-        database[pair] += 1
-    return database
+        counter[pair] += 1
+    return counter
 
 
-def walk(database, rules, steps=10):
-    for step in range(steps):
-        new_database = Counter()
-        for k, count in database.items():
+def walk(counter, rules, steps=10):
+    for _ in range(steps):
+        new_counter = Counter()
+        for k, count in counter.items():
             if k in rules:
                 pairA = k[0] + rules[k]
                 pairB = rules[k] + k[1]
-                new_database[pairA] += count
-                new_database[pairB] += count
-        database = new_database
-    return database
+                new_counter[pairA] += count
+                new_counter[pairB] += count
+        counter = new_counter
+    return counter
 
 
 def solve(template, steps=10):
     initialPolymer = template
-    database = initDB(template)
-    database = walk(database, rules, steps)
+    counter = initDB(template)
+    counter = walk(counter, rules, steps)
     atomStats = Counter()
     # letters on the outside don't change
     atomStats[initialPolymer[0]] = 1
     atomStats[initialPolymer[-1]] = 1
-    for pair, count in database.items():
+    for pair, count in counter.items():
         # count each letter
         atomStats[pair[0]] += count
         atomStats[pair[1]] += count
