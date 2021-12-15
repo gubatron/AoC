@@ -19,14 +19,7 @@ def initDB(template):
     return database
 
 
-def countInitialElements():
-    elements = Counter()
-    for c in template:
-        elements[c] += 1
-    return elements
-
-
-def walk(database, rules, elements, steps=10):
+def walk(database, rules, steps=10):
     for step in range(steps):
         new_database = Counter()
         for k, count in database.items():
@@ -38,10 +31,11 @@ def walk(database, rules, elements, steps=10):
         database = new_database
     return database
 
+
 def solve(template, steps=10):
     initialPolymer = template
     database = initDB(template)
-    database = walk(database, rules, countInitialElements(), steps)
+    database = walk(database, rules, steps)
     atomStats = Counter()
     # letters on the outside don't change
     atomStats[initialPolymer[0]] = 1
@@ -52,10 +46,11 @@ def solve(template, steps=10):
         atomStats[pair[1]] += count
     atomStats.most_common()
     sortedAtoms = atomStats.most_common()
-    return (sortedAtoms[0][1] - sortedAtoms[-1][1])//2
+    return (sortedAtoms[0][1] - sortedAtoms[-1][1]) // 2
+
 
 ANS1 = solve(template, 10)
 ANS2 = solve(template, 40)
 
-print("ans1={}".format(ANS1)) # 2915
-print("ans2={}".format(ANS2)) # 3353146900153
+print("ans1={}".format(ANS1))  # 2915
+print("ans2={}".format(ANS2))  # 3353146900153
