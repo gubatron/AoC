@@ -44,7 +44,6 @@ def solve(template, steps=10):
         # count each letter
         atomStats[pair[0]] += count
         atomStats[pair[1]] += count
-    atomStats.most_common()
     sortedAtoms = atomStats.most_common()
     return (sortedAtoms[0][1] - sortedAtoms[-1][1]) // 2
 
