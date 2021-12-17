@@ -1,3 +1,6 @@
+import heapq
+
+
 def readFileToStringList(path, stripped=True):
     fp = open(path, mode='r', buffering=4096)
     result = fp.readlines()
@@ -98,6 +101,7 @@ def BFS(source, target, GRAPH):
 # { (fooNodeCoordinateX, fooNodeCoordinateY): {(adjacentX, adjacentY): adjacentCost, .. } }
 #
 def DIJKSTRA(source, end, GRAPH, infinity=10**100):
+    from heapq import heappush, heappop
     distances = {}
     sourceAdjacents = GRAPH[source].keys()
     for node in GRAPH:
@@ -109,26 +113,26 @@ def DIJKSTRA(source, end, GRAPH, infinity=10**100):
             distances[node] = GRAPH[source][node]
         else:
             distances[node] = infinity
-    queue = [source]
+    # will be used as a priority queue using heapq which sorts by the first element of the given tuple
+    # [ (distance, nodeID), ...  ]
+    queue = [(0,source)]
     visited = []
 
     while len(queue) > 0:
         # find nearest non visited node (TODO: use a priority queue for this)
         nearestNode = None
         if len(queue) == 1 and not (queue[0] in visited):
-            nearestNode = queue[0]
+            nearestNode = queue[0][1]
         else:
-            for node in queue:
-                # scan the queue for closest one
-                if nearestNode is None:
-                    nearestNode = node
-                elif distances[node] < distances[nearestNode]:
-                    nearestNode = node
+            nearestNode = heappop(queue)[1]
         # remove nearest node from the queue
         if nearestNode not in visited and not nearestNode is None:
             visited.append(nearestNode)
-        if nearestNode in queue:
-            queue.remove(nearestNode)
+
+        # heapq gymnastics to remove the node, given distances change, so we search by the nodeId (2nd element in tuple)
+        if nearestNode in list(map(lambda tuple: tuple[1], queue)):
+            nearestNodeTuple = list(filter(lambda x: x[1] == nearestNode, queue))[0]
+            queue.remove(nearestNodeTuple)
 
         # get the adjacent nodes to the neaest we have not visited and update their distances
         adjacentNodes = GRAPH[nearestNode]
@@ -138,8 +142,10 @@ def DIJKSTRA(source, end, GRAPH, infinity=10**100):
             # optimize the distance
             if distances[nearestNode] + cost < distances[adjacentNodeId]:
                 distances[adjacentNodeId] = distances[nearestNode] + cost
-            if adjacentNodeId not in queue and adjacentNodeId not in visited:
-                queue.append(adjacentNodeId)
+            # if the node ID isn't already in the priority queue add it, we search in a list of the nodes ids
+            # made from the tuples' second element in the priority queue
+            if adjacentNodeId not in list(map(lambda tuple: tuple[1], queue)) and adjacentNodeId not in visited:
+                heappush(queue, (distances[adjacentNodeId], adjacentNodeId))
     return visited, distances
 
 
