@@ -88,6 +88,84 @@ def BFS(source, target, GRAPH):
     return visited
 
 
+#
+# GRAPH is a dict of lists
+# The Keys are the Node Ids or Coordinates as a tuple (x,y)
+# The values are a dict of adjacentNode IDs (or coord tuples) and their distances to the key
+#   key   -> adjacent node coordinates (x,y) or identifier
+#   value -> distance or cost
+# costs cannot be negative, Dijkstra fails for negative costs
+# { (fooNodeCoordinateX, fooNodeCoordinateY): {(adjacentX, adjacentY): adjacentCost, .. } }
+#
+def DIJKSTRA(source, end, GRAPH, infinity=10**100):
+    distances = {}
+    sourceAdjacents = GRAPH[source].keys()
+    for node in GRAPH:
+        if node in distances:
+            continue
+        if node == source:
+            distances[source] = 0
+        elif node in sourceAdjacents:
+            distances[node] = GRAPH[source][node]
+        else:
+            distances[node] = infinity
+    queue = [source]
+    visited = []
+
+    while len(queue) > 0:
+        # find nearest non visited node (TODO: use a priority queue for this)
+        minDistanceNode = None
+        if len(queue) == 1 and not (queue[0] in visited):
+            minDistanceNode = queue[0]
+        else:
+            for node in queue:
+                if node in visited:
+                    continue
+                # scan the queue for closest one
+                if minDistanceNode is None:
+                    minDistanceNode = node
+                elif distances[node] <= distances[minDistanceNode]:
+                    minDistanceNode = node
+
+        # remove nearest node from the queue
+        if minDistanceNode in queue:
+            queue.remove(minDistanceNode)
+        if minDistanceNode not in visited and not   minDistanceNode is None:
+            visited.append(minDistanceNode)
+        if minDistanceNode is None:
+            visited.append(end)
+            return visited, distances
+
+        # get the adjacent nodes to the neaest we have not visited and update their distances
+        adjacentNodes = GRAPH[minDistanceNode]
+        for adjacentNodeId, cost in adjacentNodes.items():
+            # adjust distance from our starting node (minDistanceNode) to its adjacents
+            if adjacentNodeId in visited:
+                continue
+            # optimize the distance
+            if distances[minDistanceNode] + cost < distances[adjacentNodeId]:
+                distances[adjacentNodeId] = distances[minDistanceNode] + cost
+            if adjacentNodeId != end:
+                queue.append(adjacentNodeId)
+
+    return visited, distances
+
+
+def testDijkstra():
+    graph = {
+        (1, 1): { (2, 2): 2, (3, 3): 4},
+        (2, 2): { (3, 3): 1, (4, 4): 7},
+        (3, 3): { (5, 5): 3},
+        (4, 4): { (6, 6): 1},
+        (5, 5): { (4,4): 2, (6, 6): 5},
+        (6, 6): { (6, 6): 0}
+    }
+
+    visited, distances = DIJKSTRA((1, 1), (6, 6), graph)
+    print(f'visited:{visited}\ndistances:{distances}')
+
+
 if __name__ == '__main__':
-    print(readStringsBySeparator('strings_by_sep_test.txt', '-'))
-    print(readIntList('int_list.txt'))
+    #print(readStringsBySeparator('strings_by_sep_test.txt', '-'))
+    #print(readIntList('int_list.txt'))
+    testDijkstra()
