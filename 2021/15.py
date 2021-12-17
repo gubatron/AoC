@@ -53,4 +53,4 @@ start, end = (0,0), (len(bigMatrix) - 1, len(bigMatrix[0]) - 1)
 visited, distances = aoc.DIJKSTRA(start, end, bigGraph)
 ANS2 = distances[end]
 
-print("ans2={}".format(ANS2))
+print("ans2={}".format(ANS2)) # 2835
