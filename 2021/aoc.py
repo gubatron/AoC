@@ -168,4 +168,5 @@ def testDijkstra():
 if __name__ == '__main__':
     #print(readStringsBySeparator('strings_by_sep_test.txt', '-'))
     #print(readIntList('int_list.txt'))
-    testDijkstra()
+    #testDijkstra()
+    pass
