@@ -57,10 +57,8 @@ def padImage(imgDict, padding=5, defaultChar='.'):
 
 
 def padImageAsNeeded(imgDict, defaultChar):
-    padding = 0
     while (defaultChar == '.' and not allBordersDark(imgDict)
            or (defaultChar == '#' and not allBordersLit(imgDict))):
-        padding += 1
         padImage(imgDict, 1, defaultChar)
 
 
