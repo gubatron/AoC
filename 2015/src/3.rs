@@ -38,14 +38,12 @@ fn count_houses(directions: Vec<char>) -> i32 {
     directions.iter().for_each(|dir| {
         let mut x_delta = 0;
         let mut y_delta = 0;
-        if *dir == RIGHT {
-            x_delta = 1;
-        } else if *dir == LEFT {
-            x_delta = -1;
-        } else if *dir == DOWN {
-            y_delta = 1;
-        } else if *dir == UP {
-            y_delta = -1;
+        match *dir {
+            RIGHT => x_delta = 1,
+            LEFT => x_delta = -1,
+            DOWN => y_delta = 1,
+            UP => y_delta = -1,
+            _ => {}
         }
         last = House { x:last.x + x_delta, y: last.y + y_delta};
         visited.insert(last);
