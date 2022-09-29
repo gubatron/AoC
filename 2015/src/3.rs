@@ -24,12 +24,20 @@ fn tests() {
     // part 1 tests
     assert_eq!(2, count_houses(&Vec::from([RIGHT])));
     assert_eq!(4, count_houses(&Vec::from([UP, RIGHT, DOWN, LEFT])));
-    assert_eq!(2, count_houses(&Vec::from([UP, DOWN, UP, DOWN, UP, DOWN, UP])));
+    assert_eq!(
+        2,
+        count_houses(&Vec::from([UP, DOWN, UP, DOWN, UP, DOWN, UP]))
+    );
 
     // part 2 tests
     assert_eq!(3, count_houses_2(&Vec::from([UP, DOWN])));
     assert_eq!(3, count_houses_2(&Vec::from([UP, RIGHT, DOWN, LEFT])));
-    assert_eq!(11, count_houses_2(&Vec::from([UP, DOWN, UP, DOWN, UP, DOWN, UP, DOWN, UP, DOWN])));
+    assert_eq!(
+        11,
+        count_houses_2(&Vec::from([
+            UP, DOWN, UP, DOWN, UP, DOWN, UP, DOWN, UP, DOWN
+        ]))
+    );
 }
 
 fn count_houses(directions: &Vec<char>) -> i32 {
@@ -47,7 +55,10 @@ fn count_houses(directions: &Vec<char>) -> i32 {
             UP => y_delta = -1,
             _ => {}
         }
-        last = House { x: last.x + x_delta, y: last.y + y_delta };
+        last = House {
+            x: last.x + x_delta,
+            y: last.y + y_delta,
+        };
         visited.insert(last);
     });
 
@@ -74,11 +85,17 @@ fn count_houses_2(directions: &Vec<char>) -> i32 {
 
         if i % 2 == 0 {
             //santa
-            last_santa = House { x: last_santa.x + x_delta, y: last_santa.y + y_delta };
+            last_santa = House {
+                x: last_santa.x + x_delta,
+                y: last_santa.y + y_delta,
+            };
             visited.insert(last_santa);
         } else {
             //robot
-            last_robot = House { x: last_robot.x + x_delta, y: last_robot.y + y_delta };
+            last_robot = House {
+                x: last_robot.x + x_delta,
+                y: last_robot.y + y_delta,
+            };
             visited.insert(last_robot);
         }
         i += 1;

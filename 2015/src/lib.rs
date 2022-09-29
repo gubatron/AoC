@@ -11,7 +11,9 @@ pub mod utils {
         let error_string = format!("file {} not found", filename);
         let file = File::open(filename).expect(&*error_string);
         let buf = BufReader::new(file);
-        buf.lines().map(|line| line.expect("error reading line")).collect()
+        buf.lines()
+            .map(|line| line.expect("error reading line"))
+            .collect()
     }
 
     pub fn load_input_as_vec_char(filename: impl AsRef<Path> + Display) -> Vec<char> {
@@ -28,7 +30,10 @@ pub mod utils {
     // Load each line of a file as an i32 and add it to a Vec<i32>
     pub fn load_input_as_vec_int(filename: impl AsRef<Path> + Display) -> Vec<i32> {
         let vec_str = load_input_lines_as_vec_str(filename);
-        let vec_int: Vec<i32> = vec_str.iter().map(|l| -> i32{ l.parse().unwrap() }).collect();
+        let vec_int: Vec<i32> = vec_str
+            .iter()
+            .map(|l| -> i32 { l.parse().unwrap() })
+            .collect();
         vec_int
     }
 
