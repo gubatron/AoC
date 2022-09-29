@@ -3,13 +3,10 @@ name = "aoc_2015"
 version = "0.1.0"
 edition = "2021"
 
-[[bin]]
-name = "3"
-path = "src/3.rs"
+[dependencies]
+md-5 = "0.10.5"
 
-[workspace]
-members = [
-    "src/1.rs",
-    "src/2.rs",
-    "src/3.rs"
-]
+[[bin]]
+name = "4"
+path = "src/4.rs"
+
