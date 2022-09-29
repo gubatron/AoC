@@ -5,10 +5,6 @@ fn concat_secret_to_i32(secret: &str, n: i32) -> String {
     format!("{}{}", secret, n)
 }
 
-fn hash_has_5_zeroes(hash_str: &String) -> bool {
-    hash_str.starts_with("00000")
-}
-
 fn md5hash_string(input: &String) -> String {
     let mut hasher: CoreWrapper<Md5Core> = Md5::new();
     hasher.update(input.as_bytes());
@@ -20,7 +16,7 @@ fn find_adventcoin_nonce(secret: &String, has_six_zeroes: bool) -> i32 {
     loop {
         let nonce = concat_secret_to_i32(secret, i);
         let md5_hash_string = &md5hash_string(&nonce);
-        if !has_six_zeroes && hash_has_5_zeroes(md5_hash_string) {
+        if !has_six_zeroes && md5_hash_string.starts_with("00000") {
             return i;
         } else if has_six_zeroes && md5_hash_string.starts_with("000000") {
             return i;
@@ -43,6 +39,6 @@ fn part2() {
 }
 
 fn main() {
-    part1();
-    part2();
+    part1(); // 254575
+    part2(); // 1038736
 }
