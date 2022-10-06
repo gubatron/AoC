@@ -10,7 +10,7 @@ fn md5hash_string(input: &String) -> String {
 fn find_adventcoin_nonce(secret: &String, has_six_zeroes: bool) -> i32 {
     let mut nonce = 0;
     loop {
-        let hash_input = format!("{}{}", secret, nonce);
+        let hash_input = format!("{secret}{nonce}");
         let md5_hash_string = &md5hash_string(&hash_input);
         if !has_six_zeroes && md5_hash_string.starts_with("00000") {
             return nonce;
