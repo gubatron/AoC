@@ -1,22 +1,22 @@
 [package]
-name = "aoc_2015"
+name = "aoc_2022"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 md-5 = "0.10.5"
 
-[[bin]]
-name = "4"
-path = "src/4.rs"
-
-[[bin]]
-name = "3"
-path = "src/3.rs"
-
-[[bin]]
-name = "2"
-path = "src/2.rs"
+#[[bin]]
+#name = "4"
+#path = "src/4.rs"
+#
+#[[bin]]
+#name = "3"
+#path = "src/3.rs"
+#
+#[[bin]]
+#name = "2"
+#path = "src/2.rs"
 
 [[bin]]
 name = "1"
