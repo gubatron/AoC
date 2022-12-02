@@ -14,9 +14,9 @@ md-5 = "0.10.5"
 #name = "3"
 #path = "src/3.rs"
 #
-#[[bin]]
-#name = "2"
-#path = "src/2.rs"
+[[bin]]
+name = "2"
+path = "src/2.rs"
 
 [[bin]]
 name = "1"
