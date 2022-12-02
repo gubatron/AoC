@@ -1,5 +1,5 @@
-use std::ops::Deref;
-use std::str::Split;
+
+
 use aoc_2022::utils;
 use crate::Action::{DRAW, LOSE, WIN};
 use crate::Shape::{PAPER, ROCK, SCISSORS, UNKNOWN};
