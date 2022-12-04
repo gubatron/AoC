@@ -1,5 +1,9 @@
 use aoc_2022::utils;
 
+macro_rules! parse_next_part_to_i32 {
+    ($parts:expr) => {$parts.next().unwrap().to_string().parse::<i32>().unwrap()}
+}
+
 fn main() {
     let vec = utils::load_input_lines_as_vec_str("4.txt");
     println!("Day 4: Camp Cleanup");
@@ -12,7 +16,7 @@ type Section = [i32; 2];
 fn part1(sections: &Vec<String>) -> i32 {
     return sections.iter().map(|assignments| {
         if section_contains_another(sections_from_assignments(assignments)) {
-            return 1
+            return 1;
         }
         0
     }).sum();
@@ -21,7 +25,7 @@ fn part1(sections: &Vec<String>) -> i32 {
 fn part2(sections: &Vec<String>) -> i32 {
     return sections.iter().map(|assignments| {
         if section_overlaps_another(sections_from_assignments(assignments)) {
-            return 1
+            return 1;
         }
         0
     }).sum();
@@ -34,15 +38,15 @@ fn sections_from_assignments(assignments: &String) -> (Section, Section) {
 
 fn section_from_str(segment_str: &str) -> Section {
     let mut parts = segment_str.split("-");
-    let start: i32 = parts.next().unwrap().to_string().parse::<i32>().unwrap();
-    let end: i32 = parts.next().unwrap().to_string().parse::<i32>().unwrap();
+    let start: i32 = parse_next_part_to_i32!(parts);
+    let end: i32 = parse_next_part_to_i32!(parts);
     return [start, end];
 }
 
-fn section_contains_another((a,b) : (Section, Section)) -> bool {
-    return a[0]<=b[0] && b[1] <= a[1] || b[0]<=a[0] && a[1]<=b[1];
+fn section_contains_another((a, b): (Section, Section)) -> bool {
+    return a[0] <= b[0] && b[1] <= a[1] || b[0] <= a[0] && a[1] <= b[1];
 }
 
-fn section_overlaps_another((a,b) : (Section, Section)) -> bool {
+fn section_overlaps_another((a, b): (Section, Section)) -> bool {
     return !(a[1] < b[0] || a[0] > b[1]);
 }
