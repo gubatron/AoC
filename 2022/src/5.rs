@@ -27,7 +27,7 @@ fn main() {
             continue;
         }
 
-        if line.starts_with("move") && parsing_stage == MOVES {
+        if parsing_stage == MOVES {
             let data = extract_three_integers(&line);
             moves.push(data);
         }
@@ -36,13 +36,12 @@ fn main() {
     println!("part 2: {}", part2(&mut crates2, &moves)); // TPWCGNCCG
 }
 
-fn assign_crates_to_stacks_from_line(line : &String, crates : &mut HashMap<i32, VecDeque<char>>) {
+fn assign_crates_to_stacks_from_line(line: &String, crates: &mut HashMap<i32, VecDeque<char>>) {
     let crates_set = find_upper_case_characters(&*line);
     for (crate_letter, char_offset) in crates_set.iter() {
         let stack_number = ((char_offset / (4 as usize)) as i32) + 1;
         if crates.contains_key(&stack_number) {
-            let stack = crates.get_mut(&stack_number).unwrap();
-            stack.push_back(*crate_letter);
+            crates.get_mut(&stack_number).unwrap().push_back(*crate_letter);
         } else {
             let mut stack = VecDeque::<char>::new();
             stack.insert(0, *crate_letter);
@@ -76,22 +75,11 @@ fn extract_three_integers(text: &str) -> [i32; 3] {
     numbers
 }
 
-fn print_crates(crates: &HashMap<i32, VecDeque<char>>) {
-    let num_stacks: i32 = crates.len() as i32;
-    let mut i: i32 = 1;
-    while i <= num_stacks {
-        println!("Stack {}: {:?}", i, crates.get(&i));
-        i = i + 1;
-    }
-    println!();
-}
-
 fn top_crate_letters(crates: &HashMap<i32, VecDeque<char>>) -> String {
     let mut result = "".to_string();
     let num_crates = crates.len() as i32;
     let mut i = 1 as i32;
     while i <= num_crates {
-        println!("{} -> {:?}", i, crates);
         let c = crates.get(&i).unwrap().get(0).unwrap();
         result.push(*c);
         i += 1;
@@ -102,15 +90,11 @@ fn top_crate_letters(crates: &HashMap<i32, VecDeque<char>>) -> String {
 fn part1(crates: &mut HashMap<i32, VecDeque<char>>, moves: &Vec<[i32; 3]>) -> String {
     for data in moves.iter() {
         let (mut num_crates_to_move, from, to) = (data[0], data[1], data[2]);
-        println!("num crates:{} from:{} to:{}", num_crates_to_move, from, to);
         while num_crates_to_move > 0 {
             let crate_letter = crates.get_mut(&from).unwrap().pop_front().unwrap();
             crates.get_mut(&to).unwrap().push_front(crate_letter);
             num_crates_to_move -= 1;
         }
-        println!();
-        println!("Crates after moves...");
-        print_crates(&crates);
     }
     top_crate_letters(&crates)
 }
@@ -118,23 +102,15 @@ fn part1(crates: &mut HashMap<i32, VecDeque<char>>, moves: &Vec<[i32; 3]>) -> St
 fn part2(crates: &mut HashMap<i32, VecDeque<char>>, moves: &Vec<[i32; 3]>) -> String {
     for data in moves.iter() {
         let (mut num_crates_to_move, from, to) = (data[0], data[1], data[2]);
-        println!("num crates:{} from:{} to:{}", num_crates_to_move, from, to);
         let mut temp_stack = VecDeque::<char>::new();
-
         while num_crates_to_move > 0 {
             let crate_letter = crates.get_mut(&from).unwrap().pop_front().unwrap();
             temp_stack.push_back(crate_letter);
             num_crates_to_move -= 1;
         }
-
         while !temp_stack.is_empty() {
-            let crate_letter = temp_stack.pop_back().unwrap();
-            crates.get_mut(&to).unwrap().push_front(crate_letter);
+            crates.get_mut(&to).unwrap().push_front(temp_stack.pop_back().unwrap());
         }
-
-        println!();
-        println!("Crates after moves...");
-        print_crates(&crates);
     }
     top_crate_letters(&crates)
 }
