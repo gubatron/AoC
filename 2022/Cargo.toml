@@ -5,6 +5,11 @@ edition = "2021"
 
 [dependencies]
 md-5 = "0.10.5"
+regex = "1.7.0"
+
+[[bin]]
+name = "5"
+path = "src/5.rs"
 
 [[bin]]
 name = "4"
