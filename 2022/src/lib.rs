@@ -37,6 +37,18 @@ pub mod utils {
         vec_int
     }
 
+    pub fn get_unique_substring_offset(s: &str, n: usize) -> usize {
+        for i in 0..(s.len() - n + 1) {
+            let substring = &s[i..i + n];
+            let mut chars = std::collections::HashSet::new();
+            let all_chars_different = substring.chars().all(|c| chars.insert(c));
+            if all_chars_different {
+                return i;
+            }
+        }
+        s.len()
+    }
+
     #[test]
     pub fn test_load_input_as_vec_int() {
         let vec_nums = load_input_as_vec_int("src/numbers.txt");
