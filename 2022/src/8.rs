@@ -21,56 +21,29 @@ fn part2(tree_map: Vec<Vec<i32>>) {
             max_scenic_score = tree_scenic_score
         }
     }
-    println!("part2: {}", max_scenic_score);
+    println!("part2: {}", max_scenic_score); // part2: 410400
+}
+
+fn score_in_direction(tree_height: i32, elements_in_direction: Vec<i32>) -> usize {
+    let mut score_in_direction = 0;
+    for t in elements_in_direction.into_iter() {
+        if t >= tree_height {
+            score_in_direction = score_in_direction + 1;
+            break;
+        }
+        if t < tree_height {
+            score_in_direction = score_in_direction + 1;
+        }
+    }
+    score_in_direction
 }
 
 fn scenic_score(row: usize, col: usize, tree_map: &Vec<Vec<i32>>) -> usize {
-    let mut score_left = 0;
-    let mut score_right = 0;
-    let mut score_above = 0;
-    let mut score_below = 0;
-    let tree = tree_map[row][col];
-
-    for t in elements_above(row, col, &tree_map).into_iter() {
-        if t >= tree {
-            score_above = score_above + 1;
-            break;
-        }
-        if t < tree {
-            score_above = score_above + 1;
-        }
-    }
-
-    for t in elements_left(row, col, &tree_map).into_iter() {
-        if t >= tree {
-            score_left = score_left + 1;
-            break;
-        }
-        if t < tree {
-            score_left = score_left + 1;
-        }
-    }
-
-    for t in elements_right(row, col, &tree_map).into_iter() {
-        if t >= tree {
-            score_right = score_right + 1;
-            break;
-        }
-        if t < tree {
-            score_right = score_right + 1;
-        }
-    }
-
-    for t in elements_below(row, col, &tree_map).into_iter() {
-        if t >= tree {
-            score_below = score_below + 1;
-            break;
-        }
-        if t < tree {
-            score_below = score_below + 1;
-        }
-    }
-    score_left * score_right * score_above * score_below
+    let tree_height = tree_map[row][col];
+    score_in_direction(tree_height, elements_above(row, col, &tree_map)) *
+    score_in_direction(tree_height, elements_left(row, col, &tree_map)) *
+    score_in_direction(tree_height, elements_right(row, col, &tree_map))*
+    score_in_direction(tree_height, elements_below(row, col, &tree_map))
 }
 
 fn count_visible_trees(tree_map: &Vec<Vec<i32>>) -> usize {
