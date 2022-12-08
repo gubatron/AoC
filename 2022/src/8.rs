@@ -41,9 +41,9 @@ fn score_in_direction(tree_height: i32, elements_in_direction: Vec<i32>) -> usiz
 fn scenic_score(row: usize, col: usize, tree_map: &Vec<Vec<i32>>) -> usize {
     let tree_height = tree_map[row][col];
     score_in_direction(tree_height, elements_above(row, col, &tree_map)) *
-    score_in_direction(tree_height, elements_left(row, col, &tree_map)) *
-    score_in_direction(tree_height, elements_right(row, col, &tree_map))*
-    score_in_direction(tree_height, elements_below(row, col, &tree_map))
+        score_in_direction(tree_height, elements_left(row, col, &tree_map)) *
+        score_in_direction(tree_height, elements_right(row, col, &tree_map)) *
+        score_in_direction(tree_height, elements_below(row, col, &tree_map))
 }
 
 fn count_visible_trees(tree_map: &Vec<Vec<i32>>) -> usize {
