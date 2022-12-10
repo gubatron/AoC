@@ -56,11 +56,15 @@ impl Dir<'_> {
         size
     }
 
-    pub fn get_dir(&self, folder_name: &String) -> Option<&Dir> {
-        for folder in self.sub_dirs.iter() {
+    pub fn get_dir(&self, folder_name: &String) -> Option<&mut Dir> {
+        let len_sub_dirs = self.sub_dirs.len();
+        let mut i = 0;
+        while i < len_sub_dirs {
+            let folder = &mut self.sub_dirs[i];
             if folder.name.eq(folder_name) {
                 return Some(folder);
             }
+            i = i + 1;
         }
         None
     }
@@ -132,10 +136,12 @@ fn part1(command_log: Vec<String>) {
                 let mut current_dir = a.unwrap().clone();
 
                 if current_dir.try_add_dir_by_name(dir_name) {
-                    let mut new_dir = current_dir.get_dir(dir_name).unwrap().clone();
+                    let new_dir_opt = current_dir.get_dir(dir_name);
+                    let mut new_dir = new_dir_opt.unwrap();
+                    let mut new_dir = new_dir.borrow_mut();
                     set_parent(&mut new_dir, &mut current_dir);
                 }
-                let x = fs.current_dir.unwrap().get_dir(dir_name);
+                let x = fs.current_dir.unwrap().get_dir(dir_name).unwrap();
                 fs.current_dir = x;
             }
             println!("-> current directory: {}", fs.current_dir.unwrap().name);
