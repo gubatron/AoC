@@ -8,6 +8,10 @@ md-5 = "0.10.5"
 regex = "1.7.0"
 
 [[bin]]
+name = "11"
+path = "src/11.rs"
+
+[[bin]]
 name = "10"
 path = "src/10.rs"
 
