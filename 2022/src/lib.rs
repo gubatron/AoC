@@ -1,10 +1,36 @@
 pub mod utils {
     use std::fmt::Display;
+    use std::fs;
     use std::fs::File;
     use std::io::BufRead;
     use std::io::BufReader;
     use std::path::Path;
     use std::vec::Vec;
+
+    pub fn convert_comma_separated_number_list_to_vec_t<T>(input: &String) -> Vec<T>
+        where
+            T: std::str::FromStr,
+            <T as std::str::FromStr>::Err: std::fmt::Debug,
+    {
+        input
+            .split(",")
+            .map(|s| s.trim().parse::<T>().unwrap())
+            .collect::<Vec<T>>()
+    }
+
+    pub fn load_input_break_by_empty_lines_as_vec_str(filename: impl AsRef<Path> + Display + Copy) -> Vec<String> {
+        let input_str = fs::read_to_string(&filename).expect(format!("Unable to read file {}", filename).as_str());
+        let split = input_str.split("\n\n");
+        let mut result = Vec::new();
+        for s in split {
+            result.push(s.to_string());
+        }
+        result
+    }
+
+    pub fn load_input_as_string(filename: impl AsRef<Path> + Display + Copy) -> String {
+        fs::read_to_string(filename).expect(format!("Unable to read file {}", filename).as_str())
+    }
 
     // Load a text file and return each line as a String in a Vec<string>
     pub fn load_input_lines_as_vec_str(filename: impl AsRef<Path> + Display) -> Vec<String> {
