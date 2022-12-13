@@ -1,9 +1,12 @@
 pub mod utils {
+    use std::collections::HashMap;
     use std::fmt::Display;
     use std::fs;
     use std::fs::File;
+    use std::hash::Hash;
     use std::io::BufRead;
     use std::io::BufReader;
+    use std::ops::Deref;
     use std::path::Path;
     use std::vec::Vec;
 
@@ -73,6 +76,33 @@ pub mod utils {
             }
         }
         s.len()
+    }
+
+    pub trait GraphNode {
+        fn equals(&self, other: &Self) -> bool;
+    }
+
+    pub fn bfs<T: GraphNode + PartialEq + Eq + Hash + Clone + Copy>(source: T, target: T, graph: &HashMap<T, Vec<T>>) -> Vec<T> {
+        let mut queue = vec![source];
+        let mut visited :Vec<T> = vec![];
+
+        while !queue.is_empty() {
+            let node = queue.remove(0);
+            if node.equals(&target) {
+                return vec![node];
+            }
+            if visited.contains(&node) {
+                continue;
+            }
+            visited.push(node);
+            if let Some(neighbors) = graph.get(&node) {
+                for nref in neighbors.iter() {
+                    let neighbor : T = nref.deref().clone();
+                    queue.push(neighbor);
+                }
+            }
+        }
+        visited
     }
 
     #[test]
