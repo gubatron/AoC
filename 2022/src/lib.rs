@@ -1,12 +1,11 @@
 pub mod utils {
-    use std::collections::HashMap;
+    use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
     use std::fmt::Display;
     use std::fs;
     use std::fs::File;
     use std::hash::Hash;
     use std::io::BufRead;
     use std::io::BufReader;
-    use std::ops::Deref;
     use std::path::Path;
     use std::vec::Vec;
 
@@ -78,31 +77,89 @@ pub mod utils {
         s.len()
     }
 
-    pub trait GraphNode {
-        fn equals(&self, other: &Self) -> bool;
+    #[derive(Debug, Eq, Hash, Copy, Clone, Ord, PartialOrd)]
+    pub struct Coord {
+        pub x: i32,
+        pub y: i32,
     }
 
-    pub fn bfs<T: GraphNode + PartialEq + Eq + Hash + Clone + Copy>(source: T, target: T, graph: &HashMap<T, Vec<T>>) -> Vec<T> {
-        let mut queue = vec![source];
-        let mut visited :Vec<T> = vec![];
+    impl Coord {
+        pub fn new(x: i32, y: i32) -> Coord {
+            Coord { x, y }
+        }
 
+        pub fn manhattan_distance(&self, other: &Coord) -> i32 {
+            (self.x - other.x).abs() + (self.y - other.y).abs()
+        }
+    }
+
+    impl PartialEq for Coord {
+        fn eq(&self, other: &Self) -> bool {
+            self.x == other.x && self.y == other.y
+        }
+    }
+
+    pub fn neighbors(node: &Coord, rows: i32, cols: i32, consider_diagonals: bool) -> Vec<Coord> {
+        let mut friends = vec![];
+        let mut deltas = vec![(0, 1), (0, -1), (1, 0), (-1, 0)];
+        if consider_diagonals {
+            deltas.extend(vec![(-1, -1), (-1, 1), (1, -1), (1, 1)]);
+        }
+        for (dx, dy) in deltas { // test swapping these
+            let y = node.y + dy;
+            let x = node.x + dx;
+
+            if x >= 0 && x < cols && y >= 0 && y < rows {
+                friends.push(Coord::new(x, y));
+            }
+        }
+        friends
+    }
+
+
+    pub fn dijkstra<T>(start: T, graph: &HashMap<T, Vec<T>>) -> HashMap<T, i32>
+        where T: Ord + Hash + Copy + Eq + std::fmt::Debug {
+        let mut distances = HashMap::<T, i32>::new();
+        let mut queue = BinaryHeap::<(i32, T)>::new();
+        queue.push((0, start));
+        distances.insert(start, 0);
         while !queue.is_empty() {
-            let node = queue.remove(0);
-            if node.equals(&target) {
-                return vec![node];
-            }
-            if visited.contains(&node) {
-                continue;
-            }
-            visited.push(node);
+            let (dist, node) = queue.pop().unwrap();
             if let Some(neighbors) = graph.get(&node) {
-                for nref in neighbors.iter() {
-                    let neighbor : T = nref.deref().clone();
-                    queue.push(neighbor);
+                for n in neighbors {
+                    let new_dist = dist + 1;
+                    if !distances.contains_key(n) || new_dist < distances[n] {
+                        distances.insert(*n, new_dist);
+                        queue.push((new_dist, *n));
+                    }
                 }
             }
         }
-        visited
+        distances
+    }
+
+    pub fn bfs<T>(start: T, end: T, graph: &HashMap<T, Vec<T>>) -> (i32, HashSet::<T>)
+        where T: PartialEq + Eq + Hash + Clone + Copy + Ord + std::fmt::Debug {
+        // <(steps to get to this point as horizon opens, node)>
+        let mut queue = VecDeque::<(i32,T)>::new();
+        let mut seen = HashSet::<T>::new();
+        queue.push_back((0, start));
+        seen.insert(start);
+        while !queue.is_empty() {
+            let (dist, node) = queue.pop_front().unwrap();
+            if node == end {
+                return (dist, seen);
+            }
+            if let Some(neighbors) = graph.get(&node) {
+                for n in neighbors {
+                    if !seen.contains(n) {
+                        seen.insert(*n);
+                        queue.push_back((dist + 1, *n));
+                    }
+                }
+            }
+        }
+        (i32::MAX, seen)
     }
 
     #[test]

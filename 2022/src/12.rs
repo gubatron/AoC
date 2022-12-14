@@ -1,161 +1,133 @@
 use std::collections::HashMap;
-use aoc_2022::utils::{bfs, GraphNode};
+use log::info;
 
-#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
-struct Coord {
-    x: i32,
-    y: i32,
-}
-
-impl GraphNode for Coord {
-    fn equals(&self, other: &Self) -> bool {
-        self.x == other.x && self.y == other.y
-    }
-}
-
-impl GraphNode for &Coord {
-    fn equals(&self, other: &Self) -> bool {
-        self.x == other.x && self.y == other.y
-    }
-}
-
-
-impl Coord {
-    fn new(x: i32, y: i32) -> Coord {
-        Coord { x, y }
-    }
-
-    fn neighbors(&self, height_matrix: &Vec<Vec<u32>>, consider_diagonals: bool) -> Vec<Coord> {
-        let mut surrounding = vec![];
-        let mut deltas = vec![(-1, 0), (1, 0), (0, -1), (0, 1)];
-        if consider_diagonals {
-            deltas.extend(vec![(-1, -1), (-1, 1), (1, -1), (1, 1)]);
-        }
-        let rows = height_matrix.len() as i32;
-        let cols = height_matrix[0].len() as i32;
-
-        let my_height = height_matrix[self.y as usize][self.x as usize];
-
-        for (dx, dy) in deltas {
-            let x = self.x + dx;
-            let y = self.y + dy;
-
-            if x >= 0 && x < rows && y >= 0 && y < cols {
-                //we do this inside to avoid index out of bounds panic
-                let current_height = height_matrix[x as usize][y as usize];
-                let height_diff = my_height.abs_diff(current_height);
-                if height_diff >= 0 && height_diff <= 2 {
-                    surrounding.push(Coord::new(x, y));
-                }
-            }
-        }
-
-        surrounding
-    }
-}
-
-impl From<(i32, i32)> for Coord {
-    fn from(xy: (i32, i32)) -> Self {
-        Coord {
-            x: xy.0,
-            y: xy.1,
-        }
-    }
-}
+use aoc_2022::utils::{bfs, dijkstra, Coord};
 
 fn main() {
-    let input = aoc_2022::utils::load_input_lines_as_vec_str("12.test.txt");
+    // Hill Climbing Algorithm (BFS)
+    env_logger::try_init().unwrap();
+    let input = aoc_2022::utils::load_input_lines_as_vec_str("12.txt");
+    let (start, end) = init_start_end(&input);
+    info!("S: {:?}, E: {:?}", start, end);
+    let height_matrix: Vec<Vec<i32>> = build_height_matrix(&input);
+    //print_heights(&height_matrix);
 
-    // convert input into a Vec<Vec<char>> and extract the coordinates of 'S' and 'E' into 2 variables made of (u32,u32)
-    let mut map: Vec<Vec<char>> = input.iter().map(|x| x.chars().collect()).collect();
-    let (mut s_x, mut s_y) = (0, 0);
-    let (mut e_x, mut e_y) = (0, 0);
+    let graph_uphill = create_graph(&height_matrix, true, false);
+
+    let now = std::time::Instant::now();
+    let (steps_bfs, _, ) = bfs::<Coord>(start, end, &graph_uphill);
+    // test: 31
+    // puzzle input: 528
+    println!("Part 1 (BFS): {} in {:?}", steps_bfs, now.elapsed());
+
+    let lowest_points = find_lowest_points(&height_matrix);
+    let graph_downhill = create_graph(&height_matrix, false, false);
+    let now = std::time::Instant::now();
+    let shortest_path_distances_bfs = lowest_points
+        .iter()
+        .map(|p| {
+            // we start from the end
+            let (steps, _) = bfs::<Coord>(end, *p, &graph_downhill);
+            steps
+        })
+        .min().unwrap();
+
+    // BFS was 26 seconds
+    // test: 29
+    // puzzle input: 522
+    println!("Part 2 (BFS): {} in {:?}", shortest_path_distances_bfs, now.elapsed());
+}
+
+fn find_lowest_points(height_matrix: &Vec<Vec<i32>>) -> Vec<Coord> {
+    let mut lowest = vec![];
+    for y in 0..height_matrix.len() {
+        for x in 0..height_matrix[y as usize].len() {
+            if height_matrix[y as usize][x as usize] == 1 {
+                lowest.push(Coord::new(x as i32, y as i32));
+            }
+        }
+    }
+    lowest
+}
+
+// convert input into a Vec<Vec<char>> and extract the coordinates of 'S' and 'E' into 2 variables made of (u32,u32)
+fn init_start_end(input: &Vec<String>) -> (Coord, Coord) {
+    let map: Vec<Vec<char>> = input.iter().map(|x| x.chars().collect()).collect();
+    let mut start = Coord { x: 0, y: 0 };
+    let mut end = Coord { x: 0, y: 0 };
     for (y, line) in map.iter().enumerate() {
         for (x, c) in line.iter().enumerate() {
             if *c == 'S' {
-                s_x = x as u32;
-                s_y = y as u32;
+                start.x = x as i32;
+                start.y = y as i32;
             } else if *c == 'E' {
-                e_x = x as u32;
-                e_y = y as u32;
+                end.x = x as i32;
+                end.y = y as i32;
             }
         }
     }
+    (start, end)
+}
 
-    // print s_x, s_y, e_x, e_y
-    println!("s_x: {}, s_y: {}, e_x: {}, e_y: {}", s_x, s_y, e_x, e_y);
+// print the Vec<Vec<u32>> as an NxN matrix
+fn print_heights(height_matrix: &Vec<Vec<i32>>) {
+    for row in height_matrix {
+        for col in row {
+            info!("{:02} ", col);
+        }
+        info!("");
+    }
+}
 
-
-    // convert input into a Vec<Vec<u32> where a=1, b=2, c=3, .. z=26
-    // special cases are S=1 and E=26
-    let mut height_matrix: Vec<Vec<u32>> = input
+// convert input into a Vec<Vec<u32> where a=1, b=2, c=3, .. z=26
+// special cases are S=1 and E=26
+fn build_height_matrix(input: &Vec<String>) -> Vec<Vec<i32>> {
+    input
         .iter()
         .map(|line| {
             line.chars()
                 .map(|c| match c {
-                    'a'..='z' => c as u32 - 96,
+                    'a'..='z' => c as i32 - 96,
                     'S' => 1,
                     'E' => 26,
                     _ => panic!("unexpected char"),
                 })
                 .collect()
         })
-        .collect();
-
-    // print the Vec<Vec<u32>> as an NxN matrix
-    for row in &height_matrix {
-        for col in row {
-            print!("{:02} ", col);
-        }
-        println!();
-    }
-
-    let graph = create_graph(&height_matrix, false);
-    let visited = bfs::<Coord>(Coord::new(s_x as i32, s_y as i32), Coord::new(e_x as i32, e_y as i32), &graph);
-
-    println!("total visited: {:?}", visited.len());
-
-
-    // create an adjacency matrix of the graph where the nodes are the coordinates of the map
-    // and are only adjacent if their height difference is only 1
-    //let mut graph = HashMap::new();
-    //println!("path: {}", path.len());
+        .collect()
 }
 
-
-fn create_graph(height_matrix: &Vec<Vec<u32>>, consider_diagonals: bool) -> HashMap<Coord, Vec<Coord>> {
-    let mut graph = HashMap::new();
+// Creates a graph of all the valid paths between the start and end points
+// It's represented as a Map<Coord, Vec<Coord>> where the key is the current node and the value is a list of all the valid nodes that can be reached from the current node
+fn create_graph(height_matrix: &Vec<Vec<i32>>, up: bool, consider_diagonals: bool) -> HashMap<Coord, Vec<Coord>> {
+    let mut graph = HashMap::<Coord, Vec<Coord>>::new();
 
     let rows = height_matrix.len() as i32;
     let cols = height_matrix[0].len() as i32;
+    info!("create_graph rows:{} cols:{}", rows, cols);
 
     for y in 0..rows {
         for x in 0..cols {
             let coord = Coord::new(x, y);
-            let neighbors = coord.neighbors(height_matrix, consider_diagonals);
-            graph.insert(coord, neighbors);
+            let mut climbable_neighbors = vec![];
+
+            let possible_neighbors =
+                aoc_2022::utils::neighbors(&coord, rows, cols, consider_diagonals);
+
+            for candidate in possible_neighbors {
+                let h1 = height_matrix[y as usize][x as usize];
+                let h2 = height_matrix[candidate.y as usize][candidate.x as usize];
+
+                if (up && h2 > h1 + 1) || (!up && h1 > h2 + 1) {
+                    continue;
+                }
+
+                climbable_neighbors.push(candidate);
+            }
+            if !climbable_neighbors.is_empty() {
+                graph.insert(coord, climbable_neighbors);
+            }
         }
     }
     graph
-}
-
-// returns a vector with the neighboring points of a given point (x, y)
-fn get_neighbors(point: (u32, u32), width: usize, height: usize) -> Vec<(u32, u32)> {
-    let mut neighbors = Vec::new();
-    let (x, y) = point;
-
-    if x > 0 {
-        neighbors.push((x - 1, y));
-    }
-    if x < (width - 1) as u32 {
-        neighbors.push((x + 1, y));
-    }
-    if y > 0 {
-        neighbors.push((x, y - 1));
-    }
-    if y < (height - 1) as u32 {
-        neighbors.push((x, y + 1));
-    }
-
-    neighbors
 }
