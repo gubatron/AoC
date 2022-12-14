@@ -1,9 +1,20 @@
+use std::time::Instant;
+use log::info;
+
 // Day 11, Monkey in the middle
 fn main() {
+    env_logger::try_init().unwrap();
+
     let mut monkeys = load_monkeys("11.txt");
+
+    let now = Instant::now();
     play_rounds(&mut monkeys, 20, true); // Monkey business level: 107822
+    println!("Part 1: {} in {:?}", monkey_business_level(&monkeys), now.elapsed());
+
     let mut monkeys = load_monkeys("11.txt");
+    let now = Instant::now();
     play_rounds(&mut monkeys, 10000, false); // Monkey business level: 27267163742
+    println!("Part 2: {} in {:?}", monkey_business_level(&monkeys), now.elapsed());
 }
 
 fn play_rounds(monkeys: &mut Vec<Monkey>, rounds: usize, divide_by_3: bool) {
@@ -11,46 +22,46 @@ fn play_rounds(monkeys: &mut Vec<Monkey>, rounds: usize, divide_by_3: bool) {
     let gcd = gcd(monkeys);
     for round in 0..rounds {
         for i in 0..monkeys_len {
-            println!("Monkey {}:", &monkeys[i].index);
+            info!("Monkey {}:", &monkeys[i].index);
             while monkeys[i].items.len() > 0 {
                 monkeys[i].inspected_items += 1;
                 let mut worry_level = monkeys[i].items.remove(0);
-                println!("  Monkey inspects an item with a worry level of {}", worry_level);
+                info!("  Monkey inspects an item with a worry level of {}", worry_level);
                 let mut right_operand = worry_level;
                 if monkeys[i].right_operand != -1 {
                     right_operand = monkeys[i].right_operand as u128;
                 }
                 if monkeys[i].operation == Operation::Add {
                     worry_level += right_operand;
-                    println!("    Worry level is increases by {} to {}", right_operand, worry_level);
+                    info!("    Worry level is increases by {} to {}", right_operand, worry_level);
                 } else if monkeys[i].operation == Operation::Multiply {
                     worry_level *= right_operand;
-                    println!("    Worry level is multiplied by {} to {}", right_operand, worry_level);
+                    info!("    Worry level is multiplied by {} to {}", right_operand, worry_level);
                 }
 
                 if divide_by_3 {
                     worry_level /= 3;
-                    println!("    Monkey gets bored with item. Worry level is divided by 3 to {}.", worry_level);
+                    info!("    Monkey gets bored with item. Worry level is divided by 3 to {}.", worry_level);
                 } else {
                     worry_level = worry_level % gcd;
-                    println!("    Monkey gets bored with item. Worry level is decreased by 1 to {}.", worry_level);
+                    info!("    Monkey gets bored with item. Worry level is decreased by 1 to {}.", worry_level);
                 }
 
                 let mut target_monkey_index = monkeys[i].false_monkey_index as usize;
                 if worry_level % monkeys[i].test_divisor as u128 == 0 {
-                    println!("    Current worry level is divisible by {}.", monkeys[i].test_divisor);
+                    info!("    Current worry level is divisible by {}.", monkeys[i].test_divisor);
                     target_monkey_index = monkeys[i].true_monkey_index as usize;
                 } else {
-                    println!("    Current worry level is not divisible by {}.", monkeys[i].test_divisor);
+                    info!("    Current worry level is not divisible by {}.", monkeys[i].test_divisor);
                 }
-                println!("    Item with worry level {} is thrown to monkey {}.", worry_level, target_monkey_index);
+                info!("    Item with worry level {} is thrown to monkey {}.", worry_level, target_monkey_index);
                 monkeys[target_monkey_index].items.push(worry_level);
             }
         }
-        println!();
-        print_monkeys(monkeys, round + 1);
+        info!("");
+        //print_monkeys(monkeys, round + 1);
     }
-    print_monkey_activity(monkeys);
+    //print_monkey_activity(monkeys);
 }
 
 fn gcd(monkeys: &Vec<Monkey>) -> u128 {
@@ -64,24 +75,24 @@ fn gcd(monkeys: &Vec<Monkey>) -> u128 {
 fn monkey_business_level(monkeys: &Vec<Monkey>) -> u128 {
     let mut inspected_vector: Vec<u128> = monkeys.iter().map(|monkey| monkey.inspected_items).collect();
     inspected_vector.sort_by(|a, b| b.cmp(a));
-    println!("MKBZ -> {:?}", inspected_vector);
+    info!("MKBZ -> {:?}", inspected_vector);
 
     (inspected_vector[0] * inspected_vector[1]) as u128
 }
 
 fn print_monkeys(monkeys: &Vec<Monkey>, round: usize) {
-    println!("After round {}, the monkeys are holding items with these worry levels:", round);
+    info!("After round {}, the monkeys are holding items with these worry levels:", round);
     for monkey in monkeys {
-        println!("Monkey {}: {:?}", monkey.index, monkey.items);
+        info!("Monkey {}: {:?}", monkey.index, monkey.items);
     }
-    println!();
+    info!("");
 }
 
 fn print_monkey_activity(monkeys: &Vec<Monkey>) {
     for monkey in monkeys {
-        println!("Monkey {} inspected items {} items.", monkey.index, monkey.inspected_items);
+        info!("Monkey {} inspected items {} items.", monkey.index, monkey.inspected_items);
     }
-    println!("Monkey business level: {}", monkey_business_level(monkeys));
+    info!("Monkey business level: {}", monkey_business_level(monkeys));
 }
 
 fn load_monkeys(filename: &str) -> Vec<Monkey> {
@@ -164,7 +175,7 @@ fn str_tests() {
     let rest = &s.split_off(16);
     let items = aoc_2022::utils::convert_comma_separated_number_list_to_vec_T::<u32>(rest);
     assert_eq!(items, vec![79, 98]);
-    println!("{:?}", items);
+    info!("{:?}", items);
 
     let input = r###"Monkey 0:
         Starting items: 79, 98
@@ -173,5 +184,5 @@ fn str_tests() {
     If true: throw to monkey 2
     If false: throw to monkey 3"###;
     let monkey = Monkey::from(input.to_string());
-    println!("{:?}", monkey);
+    info!("{:?}", monkey);
 }
