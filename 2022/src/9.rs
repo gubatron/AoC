@@ -2,7 +2,11 @@ fn main() {
     // Day 9: Rope Bridge
     let command_log = aoc_2022::utils::load_input_lines_as_vec_str("9.txt");
     let moves = command_log.iter().map(|s| parse_command(s)).collect();
-    part1(&moves); // not 4082 too low
+    part1(&moves); // 6011
+
+    //let command_log = aoc_2022::utils::load_input_lines_as_vec_str("9.test.2.txt");
+    //let moves = command_log.iter().map(|s| parse_command(s)).collect();
+    part2(&moves); // 2419
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy, PartialOrd)]
@@ -22,10 +26,19 @@ fn abs(x: i32) -> i32 {
 }
 
 fn part1(moves: &Vec<(i32, i32)>) {
-    let mut head = Pos { x: 0, y: 0 };
-    let mut tail = Pos { x: 0, y: 0 };
+    // Part 1: 6002, (Test 13
+    println!("Part 1: {}", count_unique_tail_knot_positions(moves, 2));
+}
+
+fn part2(moves: &Vec<(i32, i32)>) {
+    // Part 2: ???, (Test 36)
+    println!("Part 2: {}", count_unique_tail_knot_positions(moves, 10));
+}
+
+fn count_unique_tail_knot_positions(moves: &Vec<(i32, i32)>, total_knots: usize) -> usize {
+    let mut rope = vec![Pos { x: 0, y: 0 }; total_knots];
     let mut visited = std::collections::HashSet::<Pos>::new();
-    visited.insert(head);
+    visited.insert(rope[0]);
     let mut i = 0;
 
     let moves_len = moves.len();
@@ -35,49 +48,33 @@ fn part1(moves: &Vec<(i32, i32)>) {
         let mut deltas = abs(dx) + abs(dy);
         while deltas > 0 {
             deltas -= 1;
-            println!("head: ({},{}) deltas={}", head.x, head.y, deltas);
-            println!("i={}: ({},{})", i, dx, dy);
+
+            // lead with the first node in the rope [0]
+            let head = &mut rope[0];
             head.x += dx.signum();
             head.y += dy.signum();
-            println!("head': ({},{}) deltas={}", head.x, head.y, deltas);
-            println!();
-            // Start from same row, either direction
-            //
-            // [T][H]
-            // [T] -> [H]
-            // Start from same row, either direction
-            // [T]  [T]
-            // [H]  ⬇
-            //      [H]
-            // changed columns
-            // [T]    [T]
-            // [H]          [H]
-            //
-            // follow diagonally to the same row
-            // changed rows
-            // [T][H]       [T]
-            //
-            //                 [H]
-            // follow diagonally to the same column
-            // In all cases, there's a 2 places difference between head and tail.
-            if abs(head.y - tail.y) == 2 || abs(head.x - tail.x) == 2 {
-                follow(&head, &mut tail);
-                visited.insert(tail);
+
+            // now we have more than one tail knot
+            for i in 1..total_knots {
+                let curr_head = rope[i - 1];
+                let curr_tail = rope[i];
+                let y_head = curr_head.y;
+                let x_head = curr_head.x;
+
+                if abs(y_head - curr_tail.y) == 2 || abs(x_head - curr_tail.x) == 2 {
+                    follow(rope[i - 1], &mut rope[i]);
+                }
+                visited.insert(*rope.last().unwrap());
             }
         }
         i += 1;
-        println!();
-        //print_visited_in_ascii_grid(&head, &visited);
-        println!("===================");
     };
-    println!("Part 1: {}", visited.len());
+    visited.len()
 }
 
-fn follow(head: &Pos, tail: &mut Pos) {
-    let sign_x = (head.x - tail.x).signum();
-    let sign_y = (head.y - tail.y).signum();
-    tail.x += sign_x;
-    tail.y += sign_y;
+fn follow(head: Pos, tail: &mut Pos) {
+    tail.x += (head.x - tail.x).signum(); //-1, 0, 1 depending value of the integer
+    tail.y += (head.y - tail.y).signum();
 }
 
 // returns a tuple with (delta x, delta y) to move the head of the rope
@@ -93,17 +90,4 @@ fn parse_command(command: &String) -> (i32, i32) {
         "L" => (-steps, 0),
         _ => panic!("Unknown direction: {}", direction)
     }
-}
-
-#[test]
-fn test_pos() {
-    let head = Pos { x: 0, y: 0 };
-    let tail = Pos { x: 0, y: 0 };
-    assert_eq!(head, tail);
-    let a: i32 = 4;
-    let b: i32 = 1;
-
-    println!("a-b.signum() -> {:?}", (a - b).signum());
-    println!("b-a.signum() -> {:?}", (b - a).signum());
-    println!("0.signum() -> {:?}", 0_i32.signum());
 }
