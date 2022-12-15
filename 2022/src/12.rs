@@ -6,7 +6,7 @@ use aoc_2022::utils::{bfs, dijkstra, Coord};
 fn main() {
     // Hill Climbing Algorithm (BFS)
     env_logger::try_init().unwrap();
-    let input = aoc_2022::utils::load_input_lines_as_vec_str("12.txt");
+    let input = aoc_2022::utils::load_input_lines_as_vec_str("inputs/12.txt");
     let (start, end) = init_start_end(&input);
     info!("S: {:?}, E: {:?}", start, end);
     let height_matrix: Vec<Vec<i32>> = build_height_matrix(&input);

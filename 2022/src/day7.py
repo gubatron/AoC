@@ -69,7 +69,7 @@ class Dir:
         return result
 
 if __name__ == '__main__':
-    lines = readFileToStringList('../7.txt')
+    lines = readFileToStringList('../inputs/7.txt')
     root = Dir('/')
     current_dir = root
     for line in lines:

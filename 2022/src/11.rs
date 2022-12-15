@@ -5,13 +5,13 @@ use log::info;
 fn main() {
     env_logger::try_init().unwrap();
 
-    let mut monkeys = load_monkeys("11.txt");
+    let mut monkeys = load_monkeys("inputs/11.txt");
 
     let now = Instant::now();
     play_rounds(&mut monkeys, 20, true); // Monkey business level: 107822
     println!("Part 1: {} in {:?}", monkey_business_level(&monkeys), now.elapsed());
 
-    let mut monkeys = load_monkeys("11.txt");
+    let mut monkeys = load_monkeys("inputs/11.txt");
     let now = Instant::now();
     play_rounds(&mut monkeys, 10000, false); // Monkey business level: 27267163742
     println!("Part 2: {} in {:?}", monkey_business_level(&monkeys), now.elapsed());

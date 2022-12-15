@@ -1,7 +1,7 @@
 fn main() {
     // Day 10: Cathode-Ray Tube
     let mut addx_instructions: Vec<i32> = vec![];
-    let program = aoc_2022::utils::load_input_lines_as_vec_str("10.txt");
+    let program = aoc_2022::utils::load_input_lines_as_vec_str("inputs/10.txt");
     parse_program(program, &mut addx_instructions);
     let signal_strength_sum = execute_instructions(addx_instructions);
 

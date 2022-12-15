@@ -9,7 +9,7 @@ enum ParsingStage {
 
 fn main() {
     println!("Day 5: Supply Stacks");
-    let lines = aoc_2022::utils::load_input_lines_as_vec_str("5.txt");
+    let lines = aoc_2022::utils::load_input_lines_as_vec_str("inputs/5.txt");
     let mut parsing_stage = CRATES;
 
     let mut crates = HashMap::<i32, VecDeque<char>>::new();

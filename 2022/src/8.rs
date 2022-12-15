@@ -2,7 +2,7 @@ use std::fs;
 
 fn main() {
     // Day 8: Treetop Tree House
-    let tree_map = convert_string_lines_to_int_two_dimensional_vector_of_vectors(&fs::read_to_string(&mut "8.txt".to_string()).unwrap());
+    let tree_map = convert_string_lines_to_int_two_dimensional_vector_of_vectors(&fs::read_to_string(&mut "inputs/8.txt".to_string()).unwrap());
     part1(&tree_map); // part1: 1688
     part2(tree_map); // part2: 410400
 }

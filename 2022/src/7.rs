@@ -2,7 +2,7 @@ use std::borrow::BorrowMut;
 use std::rc::Rc;
 
 fn main() {
-    let command_log = aoc_2022::utils::load_input_lines_as_vec_str("7.test.txt");
+    let command_log = aoc_2022::utils::load_input_lines_as_vec_str("inputs/7.test.txt");
     part1(command_log);
 }
 
