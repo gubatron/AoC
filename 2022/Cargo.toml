@@ -10,6 +10,10 @@ log = "0.4.17"
 env_logger = "0.10.0"
 
 [[bin]]
+name = "14"
+path = "src/14.rs"
+
+[[bin]]
 name = "12"
 path = "src/12.rs"
 
