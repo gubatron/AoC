@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
+use std::thread;
 use aoc_2022::utils::Coord;
 use crate::Element::{Air, Rock, Sand, Source};
 
@@ -13,11 +14,13 @@ fn main() {
     for line in input {
         let coords = input_line_to_coords(line.as_str());
         draw_rock_segments_on_map(&mut map, coords);
+        //thread::sleep(std::time::Duration::from_millis(1000))
     }
-    draw_map(&map);
+
+    draw_map(&map, true);
 }
 
-fn draw_map(map: &HashMap<Coord, Element>) {
+fn draw_map(map: &HashMap<Coord, Element>, clear_scren: bool) {
     let mut min_x = i32::MAX;
     let mut max_x = i32::MIN;
     let mut min_y = i32::MAX;
@@ -60,6 +63,11 @@ fn draw_map(map: &HashMap<Coord, Element>) {
         initial_padding.push(' ');
     }
 
+    if clear_scren {
+        print! ("\x1B[2J\x1B[1;1H");
+    }
+
+    // print coordinates in the header
     for i in 0..3 {
         let c_min = min_x_str.chars().nth(i).unwrap_or(' ');
         let c_origin = origin_x_str.chars().nth(i).unwrap_or(' ');
@@ -73,6 +81,8 @@ fn draw_map(map: &HashMap<Coord, Element>) {
         println!("{}", c_max);
     }
 
+
+    // print row number with 0 padding
     for y in min_y..=max_y {
         if max_y >= 100 {
             if y < 10 {
@@ -85,8 +95,9 @@ fn draw_map(map: &HashMap<Coord, Element>) {
                 print!("0");
             }
         }
+        print!("{} ", y);
 
-        print!("{:01} ", y);
+        // print map elements
         for x in min_x..=max_x {
             let coord = Coord::new(x, y);
             let element = map.get(&coord).unwrap_or(&Air);

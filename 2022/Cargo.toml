@@ -34,10 +34,6 @@ name = "8"
 path = "src/8.rs"
 
 [[bin]]
-name = "7"
-path = "src/7.rs"
-
-[[bin]]
 name = "6"
 path = "src/6.rs"
 
