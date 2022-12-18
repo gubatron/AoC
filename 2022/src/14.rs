@@ -6,7 +6,8 @@ use crate::Element::{Air, Rock, Sand, Source};
 
 fn main() {
     // Day 14: Regolith Reservoir
-    let input = aoc_2022::utils::load_input_lines_as_vec_str("inputs/14.test.txt");
+    let input = aoc_2022::utils::load_input_lines_as_vec_str("inputs/14.txt");
+    let now = std::time::Instant::now();
 
     let mut map: HashMap<Coord, Element> = HashMap::new();
     map.insert(Coord::new(500, 0), Source);
@@ -16,10 +17,26 @@ fn main() {
         draw_rock_segments_on_map(&mut map, coords);
     }
 
-    let max_y = draw_map(&map, true);
+    // Part 1
+    // test:24, real: 728
+    let sand_units_units_until_overflow = units_until_overflow(&mut map);
+    draw_map(&map, false);
+    println!("Part 1: {} sand units before sand overflow", sand_units_units_until_overflow);
 
+    // Part 2
+    // test: 93, real: 27623
+    draw_rock_bed_on_map(&mut map);
+    let sand_units_until_full = units_until_full(&mut map);
+    draw_map(&map, false);
+    println!("Part 2: {} sand units until full", sand_units_units_until_overflow + sand_units_until_full);
+
+    println!("Time: {:?}", now.elapsed());
+}
+
+fn units_until_overflow(map: &mut HashMap<Coord, Element>) -> i32 {
     let mut sand_units = 0;
     let mut current_sand = Coord::new(500, 1);
+    let (_, _, _, max_y) = get_map_bounds(&map);
 
     while current_sand.y <= max_y {
         let mut sand_settled = false;
@@ -45,22 +62,61 @@ fn main() {
                 sand_units += 1;
                 current_sand = Coord::new(500, 1);
                 sand_settled = true;
-                draw_map(&map, true);
+                //draw_map(&map, true);
             }
             if current_sand.y > max_y {
                 break;
             }
-            //draw_map(&map, true);
-            thread::sleep(std::time::Duration::from_millis(25));
+            //thread::sleep(std::time::Duration::from_millis(5));
         }
     }
-    // test:24, real: 728
-    println!("Part 1: {} sand units before sand overflow", sand_units);
+    sand_units
 }
 
-// returns max_y which I believe I can use to determine when the first
-// sand pebble has fallen off the reservoir
-fn draw_map(map: &HashMap<Coord, Element>, clear_screen: bool) -> i32 {
+fn units_until_full(map: &mut HashMap<Coord, Element>) -> i32 {
+    let mut sand_units = 0;
+    let origin = Coord::new(500, 0);
+    let mut current_sand = Coord::new(500, 0);
+
+    while *map.get(&origin).unwrap() == Source {
+        let mut sand_settled = false;
+        while !sand_settled {
+            let down_coord = Coord::new(current_sand.x, current_sand.y + 1);
+            let down_left_coord = Coord::new(current_sand.x - 1, current_sand.y + 1);
+            let down_right_coord = Coord::new(current_sand.x + 1, current_sand.y + 1);
+
+            let down_tile = *map.get(&down_coord).unwrap_or(&Air);
+            let down_left_tile = *map.get(&down_left_coord).unwrap_or(&Air);
+            let down_right_tile = *map.get(&down_right_coord).unwrap_or(&Air);
+
+            if down_tile == Air {
+                current_sand.y += 1;
+            } else if down_left_tile == Air {
+                current_sand.x -= 1;
+                current_sand.y += 1;
+            } else if down_right_tile == Air {
+                current_sand.x += 1;
+                current_sand.y += 1;
+            } else {
+                map.insert(current_sand, Sand);
+                sand_units += 1;
+                current_sand = Coord::new(500, 0);
+                sand_settled = true;
+            }
+        }
+    }
+    sand_units
+}
+
+fn draw_rock_bed_on_map(map: &mut HashMap<Coord, Element>) {
+    let (min_x, max_x, _, max_y) = get_map_bounds(&map);
+    let diff_twice = (max_x - min_x) * 4;
+    for x in min_x - diff_twice..max_x + diff_twice {
+        map.insert(Coord::new(x, max_y + 2), Rock);
+    }
+}
+
+fn get_map_bounds(map: &HashMap<Coord, Element>) -> (i32, i32, i32, i32) {
     let mut min_x = i32::MAX;
     let mut max_x = i32::MIN;
     let mut min_y = i32::MAX;
@@ -80,7 +136,12 @@ fn draw_map(map: &HashMap<Coord, Element>, clear_screen: bool) -> i32 {
             max_y = coord.y;
         }
     }
+    (min_x, max_x, min_y, max_y)
+}
 
+// returns (max_y, min_x, max_x)
+fn draw_map(map: &HashMap<Coord, Element>, clear_screen: bool) {
+    let (min_x, max_x, min_y, max_y) = get_map_bounds(&map);
     // header coordinate drawing
     let min_x_str = min_x.to_string();
     let origin_x_str = 500.to_string();
@@ -123,7 +184,7 @@ fn draw_map(map: &HashMap<Coord, Element>, clear_screen: bool) -> i32 {
 
 
     // print row number with 0 padding
-    for y in min_y..=max_y {
+    for y in min_y..max_y + 1 {
         if max_y >= 100 {
             if y < 10 {
                 print!("00");
@@ -145,8 +206,6 @@ fn draw_map(map: &HashMap<Coord, Element>, clear_screen: bool) -> i32 {
         }
         println!();
     }
-
-    max_y
 }
 
 fn draw_rock_segments_on_map(map: &mut HashMap<Coord, Element>, coords: Vec<Coord>) {
