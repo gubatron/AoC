@@ -6,7 +6,7 @@ use crate::Element::{Air, Rock, Sand, Source};
 
 fn main() {
     // Day 14: Regolith Reservoir
-    let input = aoc_2022::utils::load_input_lines_as_vec_str("inputs/14.txt");
+    let input = aoc_2022::utils::load_input_lines_as_vec_str("inputs/14.test.txt");
 
     let mut map: HashMap<Coord, Element> = HashMap::new();
     map.insert(Coord::new(500, 0), Source);
@@ -14,13 +14,53 @@ fn main() {
     for line in input {
         let coords = input_line_to_coords(line.as_str());
         draw_rock_segments_on_map(&mut map, coords);
-        //thread::sleep(std::time::Duration::from_millis(1000))
     }
 
-    draw_map(&map, true);
+    let max_y = draw_map(&map, true);
+
+    let mut sand_units = 0;
+    let mut current_sand = Coord::new(500, 1);
+
+    while current_sand.y <= max_y {
+        let mut sand_settled = false;
+        while !sand_settled {
+            let down_coord = Coord::new(current_sand.x, current_sand.y + 1);
+            let down_left_coord = Coord::new(current_sand.x - 1, current_sand.y + 1);
+            let down_right_coord = Coord::new(current_sand.x + 1, current_sand.y + 1);
+
+            let down_tile = *map.get(&down_coord).unwrap_or(&Air);
+            let down_left_tile = *map.get(&down_left_coord).unwrap_or(&Air);
+            let down_right_tile = *map.get(&down_right_coord).unwrap_or(&Air);
+
+            if down_tile == Air {
+                current_sand.y += 1;
+            } else if down_left_tile == Air {
+                current_sand.x -= 1;
+                current_sand.y += 1;
+            } else if down_right_tile == Air {
+                current_sand.x += 1;
+                current_sand.y += 1;
+            } else {
+                map.insert(current_sand, Sand);
+                sand_units += 1;
+                current_sand = Coord::new(500, 1);
+                sand_settled = true;
+                draw_map(&map, true);
+            }
+            if current_sand.y > max_y {
+                break;
+            }
+            //draw_map(&map, true);
+            thread::sleep(std::time::Duration::from_millis(25));
+        }
+    }
+    // test:24, real: 728
+    println!("Part 1: {} sand units before sand overflow", sand_units);
 }
 
-fn draw_map(map: &HashMap<Coord, Element>, clear_scren: bool) {
+// returns max_y which I believe I can use to determine when the first
+// sand pebble has fallen off the reservoir
+fn draw_map(map: &HashMap<Coord, Element>, clear_screen: bool) -> i32 {
     let mut min_x = i32::MAX;
     let mut max_x = i32::MIN;
     let mut min_y = i32::MAX;
@@ -63,8 +103,8 @@ fn draw_map(map: &HashMap<Coord, Element>, clear_scren: bool) {
         initial_padding.push(' ');
     }
 
-    if clear_scren {
-        print! ("\x1B[2J\x1B[1;1H");
+    if clear_screen {
+        print!("\x1B[2J\x1B[1;1H");
     }
 
     // print coordinates in the header
@@ -105,6 +145,8 @@ fn draw_map(map: &HashMap<Coord, Element>, clear_scren: bool) {
         }
         println!();
     }
+
+    max_y
 }
 
 fn draw_rock_segments_on_map(map: &mut HashMap<Coord, Element>, coords: Vec<Coord>) {
@@ -141,6 +183,7 @@ fn input_line_to_coords(line: &str) -> Vec<Coord> {
     ).collect()
 }
 
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 enum Element {
     Air,
     Rock,
