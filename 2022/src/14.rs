@@ -1,8 +1,8 @@
+use crate::Element::{Air, Rock, Sand, Source};
+use aoc_2022::utils::Coord;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::thread;
-use aoc_2022::utils::Coord;
-use crate::Element::{Air, Rock, Sand, Source};
 
 fn main() {
     // Day 14: Regolith Reservoir
@@ -21,14 +21,20 @@ fn main() {
     // test:24, real: 728
     let sand_units_units_until_overflow = units_until_overflow(&mut map);
     draw_map(&map, false);
-    println!("Part 1: {} sand units before sand overflow", sand_units_units_until_overflow);
+    println!(
+        "Part 1: {} sand units before sand overflow",
+        sand_units_units_until_overflow
+    );
 
     // Part 2
     // test: 93, real: 27623
     draw_rock_bed_on_map(&mut map);
     let sand_units_until_full = units_until_full(&mut map);
     draw_map(&map, false);
-    println!("Part 2: {} sand units until full", sand_units_units_until_overflow + sand_units_until_full);
+    println!(
+        "Part 2: {} sand units until full",
+        sand_units_units_until_overflow + sand_units_until_full
+    );
 
     println!("Time: {:?}", now.elapsed());
 }
@@ -67,7 +73,6 @@ fn units_until_overflow(map: &mut HashMap<Coord, Element>) -> i32 {
             if current_sand.y > max_y {
                 break;
             }
-            //thread::sleep(std::time::Duration::from_millis(5));
         }
     }
     sand_units
@@ -139,7 +144,6 @@ fn get_map_bounds(map: &HashMap<Coord, Element>) -> (i32, i32, i32, i32) {
     (min_x, max_x, min_y, max_y)
 }
 
-// returns (max_y, min_x, max_x)
 fn draw_map(map: &HashMap<Coord, Element>, clear_screen: bool) {
     let (min_x, max_x, min_y, max_y) = get_map_bounds(&map);
     // header coordinate drawing
@@ -181,7 +185,6 @@ fn draw_map(map: &HashMap<Coord, Element>, clear_screen: bool) {
         print!("{}", spaces_max);
         println!("{}", c_max);
     }
-
 
     // print row number with 0 padding
     for y in min_y..max_y + 1 {
@@ -231,15 +234,16 @@ fn draw_rock_segments_on_map(map: &mut HashMap<Coord, Element>, coords: Vec<Coor
 
 fn input_line_to_coords(line: &str) -> Vec<Coord> {
     let coords_str: Vec<&str> = line.split(" -> ").collect();
-    coords_str.iter().map(|s|
-        {
+    coords_str
+        .iter()
+        .map(|s| {
             let mut split = s.split(",");
             Coord {
                 x: split.next().unwrap().parse::<i32>().unwrap(),
                 y: split.next().unwrap().parse::<i32>().unwrap(),
             }
-        }
-    ).collect()
+        })
+        .collect()
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
