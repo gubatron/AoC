@@ -1,9 +1,17 @@
 use aoc_2015::utils;
 
+#[allow(dead_code)]
 struct Light {
     x: i32,
     y: i32,
     on: bool,
+}
+
+#[allow(dead_code)]
+struct Light2 {
+    x: i32,
+    y: i32,
+    brightness: i32,
 }
 
 #[derive(Debug)]
@@ -31,6 +39,22 @@ fn build_light_matrix() -> Vec<Vec<Light>> {
                 x: 0,
                 y: 0,
                 on: false,
+            });
+        }
+        light_matrix.push(row);
+    }
+    light_matrix
+}
+
+fn build_light2_matrix() -> Vec<Vec<Light2>> {
+    let mut light_matrix = Vec::new();
+    for _ in 0..1000 {
+        let mut row = Vec::new();
+        for _ in 0..1000 {
+            row.push(Light2 {
+                x: 0,
+                y: 0,
+                brightness: 0,
             });
         }
         light_matrix.push(row);
@@ -87,6 +111,18 @@ fn count_lights_on(light_matrix: &Vec<Vec<Light>>) -> i32 {
     count
 }
 
+fn count_lights2_total_brightness(light_matrix: &Vec<Vec<Light2>>) -> i32 {
+    let mut total_brightness = 0;
+    for row in light_matrix {
+        for light2 in row {
+            if light2.brightness > 0 {
+                total_brightness += light2.brightness;
+            }
+        }
+    }
+    total_brightness
+}
+
 fn part1() -> i32 {
     let mut light_matrix = build_light_matrix();
     let lines = utils::load_input_lines_as_vec_str("src/6.txt");
@@ -117,16 +153,54 @@ fn part1() -> i32 {
                 }
             }
         }
-        println!("Lights on: {}", count_lights_on(&light_matrix));
+        //println!("Lights on: {}", count_lights_on(&light_matrix));
     }
     count_lights_on(&light_matrix)
 }
 
 fn part2() -> i32 {
-    0
+    let mut light2_matrix = build_light2_matrix();
+    let lines = utils::load_input_lines_as_vec_str("src/6.txt");
+    // let lines: Vec<String> = vec![
+    //     "turn on 0,0 through 999,999",
+    //     "toggle 0,0 through 999,0",
+    //     "turn off 499,499 through 500,500",
+    // ]
+    // .iter()
+    // .map(|s| s.to_string())
+    // .collect();
+
+    let instructions = lines
+        .iter()
+        .map(|l| parse_instruction(l))
+        .collect::<Vec<Instruction>>();
+    // apply instructions on light_matrix
+    for i in instructions {
+        for x in i.start_x..i.end_x + 1 {
+            for y in i.start_y..i.end_y + 1 {
+                match i.command {
+                    InstructionCommand::TurnOn => {
+                        light2_matrix[x as usize][y as usize].brightness += 1
+                    }
+                    InstructionCommand::TurnOff => {
+                        light2_matrix[x as usize][y as usize].brightness =
+                            core::cmp::max(0, light2_matrix[x as usize][y as usize].brightness - 1);
+                    }
+                    InstructionCommand::Toggle => {
+                        light2_matrix[x as usize][y as usize].brightness += 2
+                    }
+                }
+            }
+        }
+        // println!(
+        //     "Lights2 total brightness: {}",
+        //     count_lights2_total_brightness(&light2_matrix)
+        // );
+    }
+    count_lights2_total_brightness(&light2_matrix)
 }
 
 fn main() {
-    println!("Part 1: {}", part1());
-    println!("Part 2: {}", part2());
+    println!("Part 1: {}", part1()); // Part 1: 400410
+    println!("Part 2: {}", part2()); // Part 2: 15343601
 }
