@@ -242,8 +242,14 @@ fn part1() -> i32 {
 
   // print all gate names and their signals
     for name in gate_names {
-        let gate = circuit_map.get(&name).unwrap();
-        println!("{}: {:?}", name, gate.signal.unwrap());
+        println!("got a gate for '{}'?",  name);
+        if let Some(gate) = circuit_map.get(&name) {
+          if let Some(signal) = gate.signal {
+            println!("{}: {:?}", name, gate.signal);
+          } else {
+            println!("{}: no signal yet", name);
+          }
+        }
     }
 
 0
