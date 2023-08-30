@@ -5,68 +5,89 @@ fn get_value(circuit_map: &HashMap<String, u16>, s: &str) -> Option<u16> {
     s.parse().ok().or_else(|| circuit_map.get(s).cloned())
 }
 
-fn evaluate_instructions(mut instructions : Vec<String>) -> HashMap<String, u16> {
-  let mut circuit_map: HashMap<String, u16> = HashMap::new();
-  let mut i = 0;
-  while !instructions.is_empty() {
-    while i < instructions.len() {
-        let inst = &instructions[i];
-        if inst.contains("AND") || inst.contains("OR") {
-            let tokens : Vec<&str> = inst.split_whitespace().collect();
-            let (a, b, gate_id) = (tokens[0], tokens[2], tokens[4]);
+fn evaluate_instructions(mut instructions: Vec<String>) -> HashMap<String, u16> {
+    let mut circuit_map: HashMap<String, u16> = HashMap::new();
+    let mut iterations_left = 10000;
+    while !instructions.is_empty() && iterations_left > 0 {
+        iterations_left -= 1;
+        println!("instructions left: {}", instructions.len());
+        let mut i: usize = 0;
+        while i < instructions.len() {
+            let inst = &instructions[i];
+            if inst.contains("AND") || inst.contains("OR") {
+                let tokens: Vec<&str> = inst.split_whitespace().collect();
+                let (a, b, gate_id) = (tokens[0], tokens[2], tokens[4]);
 
-            let a_in_circuit_map = circuit_map.contains_key(a);
-            let b_in_circuit_map = circuit_map.get(b) != None;
-            let a_is_numeric = a.parse::<u16>().is_ok();
-            let b_is_numeric = b.parse::<u16>().is_ok();
+                let a_in_circuit_map = circuit_map.contains_key(a);
+                let b_in_circuit_map = circuit_map.get(b) != None;
+                let a_is_numeric = a.parse::<u16>().is_ok();
+                let b_is_numeric = b.parse::<u16>().is_ok();
 
-            if a_is_numeric || a_in_circuit_map {
-                if b_is_numeric || b_in_circuit_map {
-                    if inst.contains("AND") {
-                        circuit_map.insert(gate_id.to_string(), get_value(&circuit_map, a).unwrap() & get_value(&circuit_map, b).unwrap());
-                    } else if inst.contains("OR") {
-                        circuit_map.insert(gate_id.to_string(), get_value(&circuit_map, a).unwrap() | get_value(&circuit_map, b).unwrap());
+                if a_is_numeric || a_in_circuit_map {
+                    if b_is_numeric || b_in_circuit_map {
+                        if inst.contains("AND") {
+                            circuit_map.insert(
+                                gate_id.to_string(),
+                                get_value(&circuit_map, a).unwrap()
+                                    & get_value(&circuit_map, b).unwrap(),
+                            );
+                        } else if inst.contains("OR") {
+                            circuit_map.insert(
+                                gate_id.to_string(),
+                                get_value(&circuit_map, a).unwrap()
+                                    | get_value(&circuit_map, b).unwrap(),
+                            );
+                        }
+                        instructions.remove(i);
+                        if i > 0 {
+                            i -= 1;
+                        }
+                        continue;
                     }
+                }
+            } else if inst.contains("LSHIFT") || inst.contains("RSHIFT") {
+                let tokens: Vec<&str> = inst.split_whitespace().collect();
+                let (a, n, gate_id) = (tokens[0], tokens[2].parse::<u16>().unwrap(), tokens[4]);
+                if let Some(val) = get_value(&circuit_map, a) {
+                    if inst.contains("LSHIFT") {
+                        circuit_map.insert(gate_id.to_string(), val << n);
+                    } else if inst.contains("RSHIFT") {
+                        circuit_map.insert(gate_id.to_string(), val >> n);
+                    }
+
                     instructions.remove(i);
+                    if i > 0 {
+                        i -= 1;
+                    }
                     continue;
                 }
-            }        
-        } else if inst.contains("LSHIFT") || inst.contains("RSHIFT") {
-            let tokens : Vec<&str> = inst.split_whitespace().collect();
-            let (a, n, gate_id) = (tokens[0], tokens[2].parse::<u16>().unwrap(), tokens[4]);
-            if let Some(val) = get_value(&circuit_map, a) {
-                if inst.contains("LSHIFT") {
-                    circuit_map.insert(gate_id.to_string(), val << n);
-                } else if inst.contains("RSHIFT") {
-                    circuit_map.insert(gate_id.to_string(), val >> n);
+            } else if inst.contains("NOT") {
+                let tokens: Vec<&str> = inst.split_whitespace().collect();
+                let (a, gate_id) = (tokens[1], tokens[3]);
+                if let Some(val) = get_value(&circuit_map, a) {
+                    circuit_map.insert(gate_id.to_string(), !val);
+                    instructions.remove(i);
+                    if i > 0 {
+                        i -= 1;
+                    }
+                    continue;
                 }
-
-                instructions.remove(i);
-                continue;
+            } else {
+                let tokens: Vec<&str> = inst.split(" -> ").collect();
+                let (a, gate_id) = (tokens[0], tokens[1]);
+                if let Some(val) = get_value(&circuit_map, a) {
+                    circuit_map.insert(gate_id.to_string(), val);
+                    instructions.remove(i);
+                    if i > 0 {
+                        i -= 1;
+                    }
+                    continue;
+                }
             }
-        } else if inst.contains("NOT") {
-            let tokens : Vec<&str> = inst.split_whitespace().collect();
-            let (a, gate_id) = (tokens[1], tokens[3]);
-            if let Some(val) = get_value(&circuit_map, a) {
-                circuit_map.insert(gate_id.to_string(), !val);
-                instructions.remove(i);
-                continue;
-            }
-        } else {
-            let tokens : Vec<&str> = inst.split(" -> ").collect();
-            let (a, gate_id) = (tokens[0], tokens[1]);
-            let a_is_numeric = a.parse::<u16>().is_ok();
-            let a_in_circuit_map = circuit_map.contains_key(a);
-            if a_is_numeric || a_in_circuit_map {
-                circuit_map.insert(gate_id.to_string(), get_value(&circuit_map, a).unwrap());
-                instructions.remove(i);
-                continue;
-            }
+            i += 1;
         }
-        i += 1; 
     }
-  }
-  circuit_map
+    circuit_map
 }
 
 fn part1() -> i32 {
