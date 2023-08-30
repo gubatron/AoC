@@ -95,12 +95,11 @@ fn part1() -> u16 {
 } // part1
 
 fn part2() -> u16 {
-    let a = part1();
-    let mut instructions = utils::load_input_lines_as_vec_str("src/7.txt");
     let mut circuit_map: HashMap<String, u16> = HashMap::new();
-    circuit_map.insert("b".to_string(), a);
+    circuit_map.insert("b".to_string(), part1());
 
     // make sure we remove the original instruction that sets b
+    let mut instructions = utils::load_input_lines_as_vec_str("src/7.txt");
     instructions.retain(|instr| !instr.ends_with(" -> b"));
 
     evaluate_instructions(instructions, &mut circuit_map);
