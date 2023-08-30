@@ -5,12 +5,10 @@ fn get_value(circuit_map: &HashMap<String, u16>, s: &str) -> Option<u16> {
     s.parse().ok().or_else(|| circuit_map.get(s).cloned())
 }
 
-fn evaluate_instructions(mut instructions: Vec<String>) -> HashMap<String, u16> {
-    let mut circuit_map: HashMap<String, u16> = HashMap::new();
-    let mut iterations_left = 10000;
+fn evaluate_instructions(mut instructions: Vec<String>, mut circuit_map: &mut HashMap<String, u16>) {
+    let mut iterations_left = 15000;
     while !instructions.is_empty() && iterations_left > 0 {
         iterations_left -= 1;
-        println!("instructions left: {}", instructions.len());
         let mut i: usize = 0;
         while i < instructions.len() {
             let inst = &instructions[i];
@@ -87,30 +85,25 @@ fn evaluate_instructions(mut instructions: Vec<String>) -> HashMap<String, u16> 
             i += 1;
         }
     }
-    circuit_map
 }
 
-fn part1() -> i32 {
-    let instructions = utils::load_input_lines_as_vec_str("src/7.txt");
-    let mut circuit_map = evaluate_instructions(instructions);
-
-    // get all gate names in alphabetical order into a vector
-    let mut gate_names: Vec<String> = circuit_map.iter().map(|(id, _)| id.clone()).collect();
-    // sort gate_names alphabetically, ascending
-    gate_names.sort();
-
-    // print all gate names and their signals
-    for name in gate_names {
-        if circuit_map.contains_key(&name) {
-            println!("{}: {:?}", name, get_value(&circuit_map, &name).unwrap());
-        } else {
-            println!("got a gate for '{}'?", name);
-        }
-    }
-    0
+fn part1() -> u16 {
+    let mut instructions = utils::load_input_lines_as_vec_str("src/7.txt");
+    let mut circuit_map: HashMap<String, u16> = HashMap::new();
+    evaluate_instructions(instructions, &mut circuit_map);
+    circuit_map.get("a").unwrap().clone()
 } // part1
+
+fn part2() -> u16 {
+    let mut instructions = utils::load_input_lines_as_vec_str("src/7.2.txt");
+    let mut circuit_map: HashMap<String, u16> = HashMap::new();
+    evaluate_instructions(instructions, &mut circuit_map);
+    circuit_map.get("a").unwrap().clone()
+}
 
 fn main() {
     println!("Day 7, Part 1: {}", part1());
-    println!("Day 7, Part 2: {}", "TODO");
+    println!("Day 7, Part 2: {}", part2());
+    // 33706: Too low.
+    // 14146: Too low.
 }
