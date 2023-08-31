@@ -6,9 +6,7 @@ fn get_value(circuit_map: &HashMap<String, u16>, s: &str) -> Option<u16> {
 }
 
 fn evaluate_instructions(mut instructions: Vec<String>, circuit_map: &mut HashMap<String, u16>) {
-    let mut iterations_left = 15000;
-    while !instructions.is_empty() && iterations_left > 0 {
-        iterations_left -= 1;
+    while !instructions.is_empty() {
         let mut i: usize = 0;
         while i < instructions.len() {
             let inst = &instructions[i];
