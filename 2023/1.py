@@ -1,10 +1,6 @@
 from aoc import read_file_to_string_list
 
 
-def is_digit(c):
-    return ord(c) >= 48 and ord(c) <= 57
-
-
 def get_digits(input):
     first, second = None, None
     max_offset = len(input) - 1
@@ -14,9 +10,9 @@ def get_digits(input):
     while i < max_offset and j > 0:
         left = input[i]
         right = input[j]
-        if first is None and is_digit(left):
+        if first is None and left.isdigit():
             first = left
-        if second is None and is_digit(right):
+        if second is None and right.isdigit():
             second = right
         i += 1
         j -= 1
@@ -39,9 +35,10 @@ def extract_digits(input):
         if c.isdigit():
             digits.append(c)
         else:
-            for j, spelled in enumerate(['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']):
+            for j, spelled in enumerate(
+                    ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']):
                 if input[i:].startswith(spelled):
-                    digits.append(str(j + 1))
+                    digits.append(str(j))
     result = ''.join(digits)
     if len(result) == 1:
         result = result + result
