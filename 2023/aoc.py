@@ -1,7 +1,6 @@
 import heapq
 
-
-def readFileToStringList(path, stripped=True):
+def read_file_to_string_list(path, stripped=True):
     fp = open(path, mode='r', buffering=4096)
     result = fp.readlines()
     if stripped:
@@ -10,28 +9,28 @@ def readFileToStringList(path, stripped=True):
     return result
 
 
-def readStringsBySeparator(path, separator, stripped=True):
-    stringList = readFileToStringList(path, stripped)
+def read_strings_by_separator(path, separator, stripped=True):
+    stringList = read_file_to_string_list(path, stripped)
     bigString = ''.join(stringList)
     if not stripped:
         return bigString.split(separator)
     return [s.strip() for s in bigString.split(separator)]
 
 
-def readIntList(path, stripped=True):
-    stringList = readFileToStringList(path, stripped)
+def read_int_list(path, stripped=True):
+    stringList = read_file_to_string_list(path, stripped)
     return list(map(int, stringList))
 
 
-def readIntMatrix(path, stripped=True):
-    data = readFileToStringList(path)
+def read_int_matrix(path, stripped=True):
+    data = read_file_to_string_list(path)
     G = []
     for l in list(map(list, data)):
         G.append(list(map(int, l)))
     return G
 
 
-def getSurroundingCoords(r, c, graph, includeDiagonals=False):
+def get_surrounding_coords(r, c, graph, includeDiagonals=False):
     surrounding = []
     deltas = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     if includeDiagonals:
@@ -43,7 +42,7 @@ def getSurroundingCoords(r, c, graph, includeDiagonals=False):
     return surrounding
 
 
-def printMatrix(G, message=None):
+def print_matrix(G, message=None):
     if message != None:
         print(message)
     for r in G:
@@ -149,7 +148,7 @@ def DIJKSTRA(source, end, GRAPH, infinity=10**100):
     return visited, distances
 
 
-def testDijkstra():
+def test_dijkstra():
     graph1 = {
         (1, 1): {
             (2, 2): 2,
@@ -205,5 +204,5 @@ def testDijkstra():
 if __name__ == '__main__':
     #print(readStringsBySeparator('strings_by_sep_test.txt', '-'))
     #print(readIntList('int_list.txt'))
-    testDijkstra()
+    test_dijkstra()
     pass
