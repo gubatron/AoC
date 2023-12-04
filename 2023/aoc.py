@@ -29,6 +29,16 @@ def read_int_matrix(path, stripped=True):
         G.append(list(map(int, l)))
     return G
 
+def read_char_matrix(path):
+    with open(path, 'r') as file:
+        data = file.readlines()
+
+    char_matrix = []
+    for line in data:
+        # Strip newline characters and convert each line into a list of characters
+        char_matrix.append(list(line.strip()))
+
+    return char_matrix
 
 def get_surrounding_coords(r, c, graph, includeDiagonals=False):
     surrounding = []
