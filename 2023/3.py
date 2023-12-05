@@ -57,7 +57,6 @@ def day3():
     num_rows = len(char_matrix)
     num_cols = get_matrix_num_cols(char_matrix)
     part_numbers_sum = 0
-    gear_parts = []
     gear_ratios = 0
     for r in range(num_rows):
         for c in range(num_cols):
@@ -67,22 +66,19 @@ def day3():
             is_gear_candidate = char_matrix[r][c] == '*'
             surrounding_coords = get_surrounding_coords(r, c, char_matrix, includeDiagonals=True)
             surrounding_parts = set()
-            candidate_parts_for_gear = set()
 
             for (sr, sc) in surrounding_coords:
                 if in_bounds(sr, sc, char_matrix) and char_matrix[sr][sc].isdigit():
                     part = get_part_from_coord(sr, sc, char_matrix)
                     surrounding_parts.add(part)
-                    if is_gear_candidate:
-                        candidate_parts_for_gear.add(part)
 
             if len(surrounding_parts) > 0:
                 print(f'({char_matrix[r][c]}@{r}, {c}): {surrounding_parts}')
 
                 for part in surrounding_parts:
                     part_numbers_sum += part.number
-            if len(candidate_parts_for_gear) == 2:
-                it = iter(candidate_parts_for_gear)
+            if is_gear_candidate and len(surrounding_parts) == 2:
+                it = iter(surrounding_parts)
                 first_part_number = next(it).number
                 second_part_number = next(it).number
                 gear_ratios += first_part_number * second_part_number
