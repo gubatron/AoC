@@ -13,8 +13,6 @@ def calc_possible_num_wins(total_time, total_distance, debug=False):
             if debug:
                 print(
                     f"would win with speed = {speed} @ dist: {test_distance} (total_time {total_time}, total_distance {total_distance})")
-        # else:
-        #    #print(f"would not win with speed = {speed} (total_time {total_time}, total_distance {total_distance})")
         speed += 1
     return wins
 
@@ -34,6 +32,10 @@ def part1(data):
     print(f"Part 1: {ans}")
 
 
-data = read_file_to_string_list('6.txt')
+def part2(total_time, total_distance):
+    print(f"Part 2: {calc_possible_num_wins(total_time, total_distance, False)}")
 
+
+data = read_file_to_string_list('6.txt')
 part1(data)
+part2(49877895, 356137815021882)
