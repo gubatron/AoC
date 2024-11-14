@@ -53,6 +53,21 @@ fn part1(graph: &HashMap<String, Node>) -> u32 {
     shortest_distance
 }
 
+// The part2 function calculates the longest route distance
+fn part2(graph: &HashMap<String, Node>) -> u32 {
+    let city_names: Vec<String> = graph.keys().cloned().collect();
+    let mut longest_distance = 0;
+
+    for perm in city_names.iter().permutations(city_names.len()) {
+        let distance = calculate_route_distance(graph, &perm);
+        if distance > longest_distance {
+            longest_distance = distance;
+        }
+    }
+
+    longest_distance
+}
+
 fn main() {
     // Initialize the graph as a HashMap of nodes
     let mut graph: HashMap<String, Node> = HashMap::new();
@@ -74,7 +89,6 @@ fn main() {
             .add_distance(from, distance);
     }
 
-    // Call part1 with the graph and print the result
-    let answer = part1(&graph);
-    println!("Shortest route distance: {}", answer);
+    println!("Part 1: Shortest route distance: {}", part1(&graph));
+    println!("Part 2: Longest route distance: {}", part2(&graph));
 }
