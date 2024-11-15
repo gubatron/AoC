@@ -6,7 +6,13 @@ edition = "2021"
 [dependencies]
 md-5 = "0.10.5"
 itertools = "0.13.0"
+num-bigint = "0.4.6"
 #regex = "1.9.3"
+
+[[bin]]
+name = "10"
+path = "src/10.rs"
+
 
 [[bin]]
 name = "9"
