@@ -6,6 +6,13 @@ pub mod utils {
     use std::path::Path;
     use std::vec::Vec;
 
+    pub fn time_now_in_secs() -> u64 {
+        let now = std::time::SystemTime::now();
+        now.duration_since(std::time::UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_secs()
+    }
+
     // Load a text file and return each line as a String in a Vec<string>
     pub fn load_input_lines_as_vec_str(filename: impl AsRef<Path> + Display) -> Vec<String> {
         let error_string = format!("file {} not found", filename);
