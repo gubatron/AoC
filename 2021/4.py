@@ -1,6 +1,11 @@
-import aoc
+import sys
+from pathlib import Path
+# Add the ../ directory to the Python path
+aoc_root_path = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(aoc_root_path))
+import utils.python.aoc as aoc
 # Giant Squid (Bingo)
-input = aoc.readFileToStringList("4.1.txt")
+input = aoc.read_file_to_string_list("4.1.txt")
 bingoNumbers = list(map(int, input[0].split(',')))
 
 # filter out empty lines, then split each line by spaces and convert to int lists

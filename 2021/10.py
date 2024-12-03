@@ -1,6 +1,11 @@
-import aoc
+import sys
+from pathlib import Path
+# Add the ../ directory to the Python path
+aoc_root_path = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(aoc_root_path))
+import utils.python.aoc as aoc
 
-lines = aoc.readFileToStringList("10.txt")
+lines = aoc.read_file_to_string_list("10.txt")
 
 
 def handleChar(c, char_stack, illegal_stack):

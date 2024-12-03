@@ -1,7 +1,12 @@
 from collections import Counter
-import aoc
+import sys
+from pathlib import Path
+# Add the ../ directory to the Python path
+aoc_root_path = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(aoc_root_path))
+import utils.python.aoc as aoc
 
-data = aoc.readFileToStringList('14.txt')
+data = aoc.read_file_to_string_list('14.txt')
 
 template = data[0]
 

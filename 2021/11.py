@@ -1,7 +1,12 @@
 from functools import reduce
-import aoc
+import sys
+from pathlib import Path
+# Add the ../ directory to the Python path
+aoc_root_path = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(aoc_root_path))
+import utils.python.aoc as aoc
 
-octos = aoc.readIntMatrix('11.txt')
+octos = aoc.read_int_matrix('11.txt')
 
 
 def increaseEnergyLevels(octos):
@@ -10,7 +15,7 @@ def increaseEnergyLevels(octos):
 
 
 print("Before any steps:")
-aoc.printMatrix(octos)
+aoc.print_matrix(octos)
 print()
 ANS1 = 0
 ANS2 = 0
@@ -24,7 +29,7 @@ while True:
     for r in range(len(old_octos)):
         for c in range(len(old_octos[0])):
             if old_octos[r][c] == 10:
-                shockwave = aoc.getSurroundingCoords(r, c, old_octos,
+                shockwave = aoc.get_surrounding_coords(r, c, old_octos,
                                                      True) + shockwave
 
     while len(shockwave) > 0:
@@ -32,7 +37,7 @@ while True:
         if old_octos[x][y] != 10:
             old_octos[x][y] += 1
             if old_octos[x][y] == 10:
-                shockwave = aoc.getSurroundingCoords(x, y, old_octos,
+                shockwave = aoc.get_surrounding_coords(x, y, old_octos,
                                                      True) + shockwave
 
     # reset to zero everybody that flashed and count flashes in this step
@@ -51,12 +56,12 @@ while True:
         ANS2 = steps
 
     print(f"step {steps}, flashes {ANS1}")
-    aoc.printMatrix(octos)
+    aoc.print_matrix(octos)
     print()
 
     if ANS2 != 0:
         break
 
-aoc.printMatrix(octos)
+aoc.print_matrix(octos)
 print("ans1={}".format(ANS1))  # 1601
 print("ans2={}".format(ANS2))  # 368

@@ -1,4 +1,9 @@
-import aoc
+import sys
+from pathlib import Path
+# Add the ../ directory to the Python path
+aoc_root_path = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(aoc_root_path))
+import utils.python.aoc as aoc
 
 def initializeGraph(matrix):
     rows = len(matrix)
@@ -7,7 +12,7 @@ def initializeGraph(matrix):
 
     for row in range(rows):
         for col in range(cols):
-            neighs = aoc.getSurroundingCoords(row, col, matrix)
+            neighs = aoc.get_surrounding_coords(row, col, matrix)
             adjacents_risks = {}
             for neighbor in neighs:
                 adjacents_risks[neighbor] = matrix[neighbor[0]][neighbor[1]]
@@ -15,7 +20,7 @@ def initializeGraph(matrix):
     return graph
 
 # part 1
-matrix = aoc.readIntMatrix("15.txt")
+matrix = aoc.read_int_matrix("15.txt")
 graph = initializeGraph(matrix)
 start, end = (0,0), (len(matrix) - 1, len(matrix[0]) - 1)
 visited, distances = aoc.DIJKSTRA(start, end, graph)

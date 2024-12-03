@@ -1,10 +1,13 @@
-import aoc
-
+import sys
+from pathlib import Path
+# Add the ../ directory to the Python path
+aoc_root_path = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(aoc_root_path))
+import utils.python.aoc as aoc
 ANS1 = 0
 ANS2 = 0
 
-report = aoc.readFileToStringList("3.1.txt")
-
+report = aoc.read_file_to_string_list("3.1.txt")
 
 def mostCommonBitAt(report, i):
     n = len(report)

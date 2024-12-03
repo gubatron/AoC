@@ -1,6 +1,11 @@
-import aoc
+import sys
+from pathlib import Path
+# Add the ../ directory to the Python path                                                                                                   
+aoc_root_path = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(aoc_root_path))
+import utils.python.aoc as aoc
 
-ages = list(map(int, aoc.readFileToStringList("6.test.txt")[0].split(",")))
+ages = list(map(int, aoc.read_file_to_string_list("6.test.txt")[0].split(",")))
 fish_map = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0}
 
 for age in ages:

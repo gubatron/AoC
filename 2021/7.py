@@ -1,7 +1,12 @@
 from math import floor
 from statistics import median, mean
-import aoc
-crabPositions = list(map(int, aoc.readFileToStringList("7.txt")[0].split(',')))
+import sys
+from pathlib import Path
+# Add the ../ directory to the Python path                                                                                                   
+aoc_root_path = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(aoc_root_path))
+import utils.python.aoc as aoc
+crabPositions = list(map(int, aoc.read_file_to_string_list("7.txt")[0].split(',')))
 median,mean = int(median(crabPositions)), floor(mean(crabPositions))
 ANS1 = ANS2 = 0
 for crabPos in crabPositions:

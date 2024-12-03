@@ -1,4 +1,9 @@
-import aoc
+import sys
+from pathlib import Path
+# Add the ../ directory to the Python path
+aoc_root_path = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(aoc_root_path))
+import utils.python.aoc as aoc
 
 
 def loadImageDict(imgData):
@@ -116,9 +121,7 @@ def processImage(imgDict, algo, steps):
         imgDict = enhanceImage(imgDict, algo, defaultChar)
     return countLitPixels(imgDict)
 
-
-#data = aoc.readFileToStringList("20.test.txt")
-data = aoc.readFileToStringList("20.txt")
+data = aoc.read_file_to_string_list("20.txt")
 imgAlgo = data[0]
 imageData = data[2:]
 imageDict = loadImageDict(imageData)

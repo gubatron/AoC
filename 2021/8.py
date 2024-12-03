@@ -1,7 +1,12 @@
-import aoc
+import sys
+from pathlib import Path
+# Add the ../ directory to the Python path                                                                                                   
+aoc_root_path = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(aoc_root_path))
+import utils.python.aoc as aoc
 from itertools import permutations
 
-data = aoc.readFileToStringList("8.txt")
+data = aoc.read_file_to_string_list("8.txt")
 
 
 def parser(line):
