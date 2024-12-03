@@ -1,17 +1,12 @@
 use aoc::utils::load_input_lines_as_vec_str;
 
 fn turn_tuples_into_2_vecs(input: Vec<(u32, u32)>) -> (Vec<u32>, Vec<u32>) {
-    let mut a = Vec::new();
-    let mut b = Vec::new();
-    for (x, y) in input {
-        a.push(x);
-        b.push(y);
-    }
-    (a, b)
+    input.into_iter().unzip()
 }
 
 fn part1(a: Vec<u32>, b: Vec<u32>) -> u32 {
     a.iter().zip(b).map(|(x, y)| x.abs_diff(y)).sum()
+    // Part 1: 2057374
 }
 
 fn main() {
