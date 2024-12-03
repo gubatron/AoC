@@ -7,12 +7,23 @@ pub mod utils {
     use std::io::BufRead;
     use std::io::BufReader;
     use std::path::Path;
+    use std::str::FromStr;
     use std::vec::Vec;
 
+    pub fn split_and_parse<T>(input: &str, separator: &str) -> Result<Vec<T>, T::Err>
+    where
+        T: FromStr,
+    {
+        input
+            .split(separator) // Split the input by the given separator
+            .map(|s| s.trim().parse::<T>()) // Trim whitespace and parse into type T
+            .collect() // Collect the parsed results into a Vec<T>
+    }
+
     pub fn convert_comma_separated_number_list_to_vec_t<T>(input: &String) -> Vec<T>
-        where
-            T: std::str::FromStr,
-            <T as std::str::FromStr>::Err: std::fmt::Debug,
+    where
+        T: std::str::FromStr,
+        <T as std::str::FromStr>::Err: std::fmt::Debug,
     {
         input
             .split(",")
@@ -20,8 +31,11 @@ pub mod utils {
             .collect::<Vec<T>>()
     }
 
-    pub fn load_input_break_by_empty_lines_as_vec_str(filename: impl AsRef<Path> + Display + Copy) -> Vec<String> {
-        let input_str = fs::read_to_string(&filename).expect(format!("Unable to read file {}", filename).as_str());
+    pub fn load_input_break_by_empty_lines_as_vec_str(
+        filename: impl AsRef<Path> + Display + Copy,
+    ) -> Vec<String> {
+        let input_str = fs::read_to_string(&filename)
+            .expect(format!("Unable to read file {}", filename).as_str());
         let split = input_str.split("\n\n");
         let mut result = Vec::new();
         for s in split {
@@ -105,7 +119,8 @@ pub mod utils {
         if consider_diagonals {
             deltas.extend(vec![(-1, -1), (-1, 1), (1, -1), (1, 1)]);
         }
-        for (dx, dy) in deltas { // test swapping these
+        for (dx, dy) in deltas {
+            // test swapping these
             let y = node.y + dy;
             let x = node.x + dx;
 
@@ -116,9 +131,10 @@ pub mod utils {
         friends
     }
 
-
     pub fn dijkstra<T>(start: T, graph: &HashMap<T, Vec<T>>) -> HashMap<T, i32>
-        where T: Ord + Hash + Copy + Eq + std::fmt::Debug {
+    where
+        T: Ord + Hash + Copy + Eq + std::fmt::Debug,
+    {
         let mut distances = HashMap::<T, i32>::new();
         let mut queue = BinaryHeap::<(i32, T)>::new();
         queue.push((0, start));
@@ -138,10 +154,12 @@ pub mod utils {
         distances
     }
 
-    pub fn bfs<T>(start: T, end: T, graph: &HashMap<T, Vec<T>>) -> (i32, HashSet::<T>)
-        where T: PartialEq + Eq + Hash + Clone + Copy + Ord + std::fmt::Debug {
+    pub fn bfs<T>(start: T, end: T, graph: &HashMap<T, Vec<T>>) -> (i32, HashSet<T>)
+    where
+        T: PartialEq + Eq + Hash + Clone + Copy + Ord + std::fmt::Debug,
+    {
         // <(steps to get to this point as horizon opens, node)>
-        let mut queue = VecDeque::<(i32,T)>::new();
+        let mut queue = VecDeque::<(i32, T)>::new();
         let mut seen = HashSet::<T>::new();
         queue.push_back((0, start));
         seen.insert(start);
@@ -164,7 +182,28 @@ pub mod utils {
 
     #[test]
     pub fn test_load_input_as_vec_int() {
-        let vec_nums = load_input_as_vec_int("src/numbers.txt");
+        let vec_nums = load_input_as_vec_int("numbers.txt");
         assert_eq!(vec_nums.iter().sum::<i32>(), 0)
+    }
+
+    #[test]
+    pub fn test_split_and_parse() {
+        let input = "42, 15, 8, 23";
+        let result: Result<Vec<u32>, _> = split_and_parse(input, ",");
+         match result {
+            Ok(parsed) => {
+                println!("Parsed numbers: {:?}", parsed);
+                assert_eq!(parsed.iter().sum::<u32>(), 88);
+            },
+            Err(e) => println!("Error parsing input: {:?}", e),
+        }
+
+
+        let bool_input = "true,false,true";
+        let bool_result: Result<Vec<bool>, _> = split_and_parse(bool_input, ",");
+        match bool_result {
+            Ok(parsed) => println!("Parsed booleans: {:?}", parsed),
+            Err(e) => println!("Error parsing booleans: {:?}", e),
+        }
     }
 }
