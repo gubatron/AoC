@@ -1,6 +1,11 @@
 # By @gubatron - Nov 10, 2021 (warm up in python for Advent of Code 2021)
-from aoc import *
-changes = list(map(int, readIntList('1.1.txt')))
+import sys
+from pathlib import Path
+# Add the ../ directory to the Python path
+aoc_root_path = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(aoc_root_path))
+import utils.python.aoc as aoc
+changes = list(map(int, aoc.read_int_list('1.1.txt')))
 ans1 = sum(changes)
 
 found = False
