@@ -20,7 +20,7 @@ fn main() {
 fn play_rounds(monkeys: &mut Vec<Monkey>, rounds: usize, divide_by_3: bool) {
     let monkeys_len = monkeys.len();
     let gcd = gcd(monkeys);
-    for round in 0..rounds {
+    for _round in 0..rounds {
         for i in 0..monkeys_len {
             info!("Monkey {}:", &monkeys[i].index);
             while monkeys[i].items.len() > 0 {
@@ -80,23 +80,23 @@ fn monkey_business_level(monkeys: &Vec<Monkey>) -> u128 {
     (inspected_vector[0] * inspected_vector[1]) as u128
 }
 
-fn print_monkeys(monkeys: &Vec<Monkey>, round: usize) {
-    info!("After round {}, the monkeys are holding items with these worry levels:", round);
-    for monkey in monkeys {
-        info!("Monkey {}: {:?}", monkey.index, monkey.items);
-    }
-    info!("");
-}
+//fn print_monkeys(monkeys: &Vec<Monkey>, round: usize) {
+//    info!("After round {}, the monkeys are holding items with these worry levels:", round);
+//    for monkey in monkeys {
+//        info!("Monkey {}: {:?}", monkey.index, monkey.items);
+//    }
+//    info!("");
+//}
 
-fn print_monkey_activity(monkeys: &Vec<Monkey>) {
-    for monkey in monkeys {
-        info!("Monkey {} inspected items {} items.", monkey.index, monkey.inspected_items);
-    }
-    info!("Monkey business level: {}", monkey_business_level(monkeys));
-}
+//fn print_monkey_activity(monkeys: &Vec<Monkey>) {
+//    for monkey in monkeys {
+//        info!("Monkey {} inspected items {} items.", monkey.index, monkey.inspected_items);
+//    }
+//    info!("Monkey business level: {}", monkey_business_level(monkeys));
+//}
 
 fn load_monkeys(filename: &str) -> Vec<Monkey> {
-    aoc_2022::utils::load_input_break_by_empty_lines_as_vec_str(filename)
+    aoc::utils::load_input_break_by_empty_lines_as_vec_str(filename)
         .iter()
         .map(|monkey_str| monkey_str.clone().into()).collect::<Vec<Monkey>>()
 }
@@ -147,7 +147,7 @@ impl From<String> for Monkey {
             if line.starts_with("Monkey") {
                 monkey.index = line.chars().collect::<Vec<char>>()[7].to_digit(10).unwrap();
             } else if line.starts_with("Starting") {
-                monkey.items = aoc_2022::utils::convert_comma_separated_number_list_to_vec_t::<u128>(&line.to_string().split_off(16));
+                monkey.items = aoc::utils::convert_comma_separated_number_list_to_vec_t::<u128>(&line.to_string().split_off(16));
             } else if line.starts_with("Operation") {
                 match line.contains("*") {
                     true => monkey.operation = Operation::Multiply,
@@ -173,7 +173,7 @@ impl From<String> for Monkey {
 fn str_tests() {
     let mut s = "Starting items: 79, 98".to_string();
     let rest = &s.split_off(16);
-    let items = aoc_2022::utils::convert_comma_separated_number_list_to_vec_T::<u32>(rest);
+    let items = aoc::utils::convert_comma_separated_number_list_to_vec_T::<u32>(rest);
     assert_eq!(items, vec![79, 98]);
     info!("{:?}", items);
 

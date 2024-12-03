@@ -1,0 +1,15 @@
+[package]
+name = "aoc"
+version = "0.1.0"
+edition = "2021"
+
+# A short description of your library
+description = "A utility library for Advent of Code problems"
+
+# Your name as the author
+authors = ["Angel Leon <gubatron@gmail.com>"]
+
+# The license under which you release this code
+license = "MIT OR Apache-2.0"
+
+[dependencies]

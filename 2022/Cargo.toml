@@ -8,6 +8,7 @@ md-5 = "0.10.5"
 regex = "1.7.0"
 log = "0.4.17"
 env_logger = "0.10.0"
+aoc = { path = "../utils/rust", version = "0.1.0" }
 
 [[bin]]
 name = "14"

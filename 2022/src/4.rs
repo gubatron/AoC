@@ -1,4 +1,4 @@
-use aoc_2022::utils;
+use aoc::utils;
 
 macro_rules! parse_next_part_to_i32 {
     ($parts:expr) => {$parts.next().unwrap().to_string().parse::<i32>().unwrap()}

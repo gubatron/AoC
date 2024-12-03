@@ -1,6 +1,4 @@
-
-
-use aoc_2022::utils;
+use aoc::utils;
 use crate::Action::{DRAW, LOSE, WIN};
 use crate::Shape::{PAPER, ROCK, SCISSORS, UNKNOWN};
 

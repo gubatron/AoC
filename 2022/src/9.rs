@@ -1,10 +1,10 @@
 fn main() {
     // Day 9: Rope Bridge
-    let command_log = aoc_2022::utils::load_input_lines_as_vec_str("inputs/9.txt");
+    let command_log = aoc::utils::load_input_lines_as_vec_str("inputs/9.txt");
     let moves = command_log.iter().map(|s| parse_command(s)).collect();
     part1(&moves); // 6011
 
-    //let command_log = aoc_2022::utils::load_input_lines_as_vec_str("9.test.2.txt");
+    //let command_log = aoc::utils::load_input_lines_as_vec_str("9.test.2.txt");
     //let moves = command_log.iter().map(|s| parse_command(s)).collect();
     part2(&moves); // 2419
 }

@@ -1,12 +1,11 @@
 use crate::Element::{Air, Rock, Sand, Source};
-use aoc_2022::utils::Coord;
+use aoc::utils::Coord;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
-use std::thread;
 
 fn main() {
     // Day 14: Regolith Reservoir
-    let input = aoc_2022::utils::load_input_lines_as_vec_str("inputs/14.txt");
+    let input = aoc::utils::load_input_lines_as_vec_str("inputs/14.txt");
     let now = std::time::Instant::now();
 
     let mut map: HashMap<Coord, Element> = HashMap::new();

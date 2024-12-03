@@ -1,4 +1,4 @@
-use aoc_2022::utils;
+use aoc::utils;
 
 fn part1(calories_list: &Vec<String>) {
     let mut top_max_calories = 0;

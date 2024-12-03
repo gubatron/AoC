@@ -1,5 +1,5 @@
 use std::collections::{HashMap, HashSet};
-use aoc_2022::utils;
+use aoc::utils;
 
 fn main() {
     println!("day 3: Rucksack Reorganization");

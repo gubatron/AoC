@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 use log::info;
 
-use aoc_2022::utils::{bfs, dijkstra, Coord};
+use aoc::utils::{bfs, Coord};
 
 fn main() {
     // Hill Climbing Algorithm (BFS)
     env_logger::try_init().unwrap();
-    let input = aoc_2022::utils::load_input_lines_as_vec_str("inputs/12.txt");
+    let input = aoc::utils::load_input_lines_as_vec_str("inputs/12.txt");
     let (start, end) = init_start_end(&input);
     info!("S: {:?}, E: {:?}", start, end);
     let height_matrix: Vec<Vec<i32>> = build_height_matrix(&input);
@@ -70,14 +70,14 @@ fn init_start_end(input: &Vec<String>) -> (Coord, Coord) {
 }
 
 // print the Vec<Vec<u32>> as an NxN matrix
-fn print_heights(height_matrix: &Vec<Vec<i32>>) {
-    for row in height_matrix {
-        for col in row {
-            info!("{:02} ", col);
-        }
-        info!("");
-    }
-}
+//fn print_heights(height_matrix: &Vec<Vec<i32>>) {
+//    for row in height_matrix {
+//        for col in row {
+//            info!("{:02} ", col);
+//       }
+//        info!("");
+//    }
+//}
 
 // convert input into a Vec<Vec<u32> where a=1, b=2, c=3, .. z=26
 // special cases are S=1 and E=26
@@ -112,7 +112,7 @@ fn create_graph(height_matrix: &Vec<Vec<i32>>, up: bool, consider_diagonals: boo
             let mut climbable_neighbors = vec![];
 
             let possible_neighbors =
-                aoc_2022::utils::neighbors(&coord, rows, cols, consider_diagonals);
+                aoc::utils::neighbors(&coord, rows, cols, consider_diagonals);
 
             for candidate in possible_neighbors {
                 let h1 = height_matrix[y as usize][x as usize];
