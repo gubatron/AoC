@@ -1,4 +1,9 @@
-from aoc import read_file_to_string_list
+import sys
+from pathlib import Path
+# Add the ../ directory to the Python path
+aoc_root_path = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(aoc_root_path))
+from utils.python.aoc import read_file_to_string_list
 from dataclasses import dataclass
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 

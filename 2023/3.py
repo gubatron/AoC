@@ -1,5 +1,10 @@
 from dataclasses import dataclass
-from aoc import read_char_matrix, print_matrix, get_surrounding_coords
+import sys
+from pathlib import Path
+# Add the ../ directory to the Python path
+aoc_root_path = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(aoc_root_path))
+from utils.python.aoc import read_char_matrix, print_matrix, get_surrounding_coords
 
 
 @dataclass(frozen=True)
