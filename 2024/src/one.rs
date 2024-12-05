@@ -1,5 +1,3 @@
-mod two;
-
 use aoc::utils::load_input_lines_as_vec_str;
 
 fn turn_tuples_into_2_vecs(input: Vec<(u32, u32)>) -> (Vec<u32>, Vec<u32>) {
