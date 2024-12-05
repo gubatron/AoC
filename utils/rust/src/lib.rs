@@ -58,6 +58,11 @@ pub mod utils {
             .collect()
     }
 
+    pub fn load_input_as_char_matrix(filename: impl AsRef<Path> + Display) -> Vec<Vec<char>> {
+        let input = load_input_lines_as_vec_str(filename);
+        input.iter().map(|line| line.chars().collect()).collect()
+    }
+
     pub fn load_input_as_vec_char(filename: impl AsRef<Path> + Display) -> Vec<char> {
         let lines_vec = load_input_lines_as_vec_str(filename);
         let mut result = vec![];
