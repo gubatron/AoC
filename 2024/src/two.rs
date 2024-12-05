@@ -57,7 +57,11 @@ fn is_level_safe_2(level: &str) -> bool {
         let mut new_vec = vec_int.clone();
         new_vec.remove(i);
         // turn the new vec back into a string
-        let new_level = new_vec.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(" ");
+        let new_level = new_vec
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(" ");
         if is_level_safe(&new_level) {
             return true;
         }
