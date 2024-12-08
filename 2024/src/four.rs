@@ -49,18 +49,19 @@ fn count_and_find_matches(pin: &str, grid: &Vec<Vec<char>>) -> (usize, HashSet<(
     (match_count, matches)
 }
 
-fn print_grid_with_matches(grid: &Vec<Vec<char>>, matches: &HashSet<(usize, usize)>) {
-    for i in 0..grid.len() {
-        for j in 0..grid[i].len() {
-            if matches.contains(&(i, j)) {
-                print!("{}", grid[i][j]);
-            } else {
-                print!(".");
-            }
-        }
-        println!();
-    }
-}
+
+//fn print_grid_with_matches(grid: &Vec<Vec<char>>, matches: &HashSet<(usize, usize)>) {
+//    for i in 0..grid.len() {
+//        for j in 0..grid[i].len() {
+//            if matches.contains(&(i, j)) {
+//                print!("{}", grid[i][j]);
+//            } else {
+//                print!(".");
+//            }
+//        }
+//        println!();
+//    }
+//}
 
 fn count_x_mas_patterns(haystack_grid: &Vec<Vec<char>>) -> usize {
     let rows = haystack_grid.len();

@@ -154,6 +154,6 @@ fn main() {
 
     // Part 1: 4790
     println!("Part 1: {}", part1(&rules, &updates));
-    // Part 2:
+    // Part 2: 6319
     println!("Part 2: {}", part2(&rules, &updates));
 }

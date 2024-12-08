@@ -41,10 +41,10 @@ fn part2(input: &str) -> i32 {
                 sum += a * b;
             }
         }
-        if let Some(do_match) = cap.get(do_group) {
+        if let Some(_) = cap.get(do_group) {
             do_mul = true;
         }
-        if let Some(dont_match) = cap.get(dont_group) {
+        if let Some(_) = cap.get(dont_group) {
             do_mul = false;
         }
     }
