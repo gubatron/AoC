@@ -11,17 +11,21 @@ env_logger = "0.11.5"
 aoc = { path = "../utils/rust", version = "0.1.2" }
 
 [[bin]]
-name = "one"
-path = "src/one.rs"
+name = "five"
+path = "src/five.rs"
 
 [[bin]]
-name = "two"
-path = "src/two.rs"
+name = "four"
+path = "src/four.rs"
 
 [[bin]]
 name = "three"
 path = "src/three.rs"
 
 [[bin]]
-name = "four"
-path = "src/four.rs"
+name = "two"
+path = "src/two.rs"
+
+[[bin]]
+name = "one"
+path = "src/one.rs"
