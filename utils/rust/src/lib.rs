@@ -159,6 +159,10 @@ pub mod utils {
         distances
     }
 
+    pub fn dimensions_cols_rows<T>(matrix: &Vec<Vec<T>>) -> (usize, usize) {
+        (matrix[0].len(), matrix.len())
+    }
+
     pub fn bfs<T>(start: T, end: T, graph: &HashMap<T, Vec<T>>) -> (i32, HashSet<T>)
     where
         T: PartialEq + Eq + Hash + Clone + Copy + Ord + std::fmt::Debug,
@@ -210,5 +214,19 @@ pub mod utils {
             Ok(parsed) => println!("Parsed booleans: {:?}", parsed),
             Err(e) => println!("Error parsing booleans: {:?}", e),
         }
+    }
+
+    #[test]
+    pub fn test_dimensions_cols_rows() {
+        // (5,2)
+        let a = vec![
+          vec!['a','b','c','d','e'],
+          vec!['1','2','3','4','5']
+        ];
+        assert_eq!(dimensions_cols_rows(&a), (5,2));
+        let b = vec![
+          vec!['a']
+        ];
+        assert_eq!(dimensions_cols_rows(&b), (1,1));
     }
 }
