@@ -24,7 +24,7 @@ fn part2(input: &str) -> i32 {
     let do_group = 4;
     let dont_group = 5;
     for cap in captures {
-        if let Some(mul_match) = cap.get(mul_group) {
+        if let Some(_mul_match) = cap.get(mul_group) {
             if do_mul {
                 let a = cap
                     .get(mul_a_group)
