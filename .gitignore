@@ -2,3 +2,11 @@
 .idea
 **/.DS_Store
 **dSYM
+**__pycache__
+Cargo.lock
+**build
+.gradle
+**target
+**out
+.vscode
+gradle
