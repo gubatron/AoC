@@ -227,9 +227,6 @@ fn part2(guard: Guard, map: &Vec<Vec<char>>, debug: bool) -> usize {
                         println!("Loop detected, adding obstruction ({},{})", x, y);
                         println!("======");
                     }
-                } else {
-                    //print_map_and_visited(&alternate_graph, &alt_guard);
-                    //println!("No loop, onto next obstruction test");
                 }
             }
             alt_guard = guard.clone();
