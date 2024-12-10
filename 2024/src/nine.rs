@@ -1,22 +1,33 @@
-// 0  1  2
-// 12 34 5
-// 0..111....22222
-fn map_diskmap_blockform(disk_map: &str) -> String {
-    // we read the diskmap from left to right, 2 digits at the time
-    // if there's a lone digit at the end, it means there's no free space after it.
+use std::fs::File;
+use std::io::{self, BufRead};
+use std::path::Path;
 
-    // the first number is the block number, the second how many blocks of free space.
-    // the first block number to the left has ID 0, the second 1 and so on.
-    // So for each pair of input numbers we have (ID, BLOCK_NUMBER, FREE_BLOCKS)
-    // 12345 -> (ID=0,BLOCK_NUMBER=1,FREE_BLOCKS=2), (ID=1,BLOCK_NUMBER=3,FREE_BLOCKS=4), (ID=2,BLOCK_NUMBER=5,FREE_BLOCKS=0)
+// We'll represent the disk as a vector of isize:
+// - file block: its ID as a positive number (or zero)
+// - free space: -1
+type Disk = Vec<isize>;
 
-    // we need to map this to a block form, where each block is logic-wise a tuple of (ID, BLOCK_NUMBER, FREE_BLOCKS)
+// Read the input file as a single line
+fn load_input(filename: &str) -> String {
+    let file = File::open(filename).expect("Failed to read file");
+    let line = io::BufReader::new(file)
+        .lines()
+        .next()
+        .expect("No line in file")
+        .unwrap();
+    line
+}
 
-    let mut blockform = String::new();
-    let mut id: u32 = 0;
+// Instead of returning a String of chars, we return a Vec<isize> representing the disk.
+// Each file is assigned a unique integer ID starting at 0.
+// Each free block is represented by -1.
+fn map_diskmap_blockform(disk_map: &str) -> Disk {
     let disk_map_bytes: &[u8] = disk_map.as_bytes();
     let disk_map_len = disk_map_bytes.len();
 
+    let mut disk: Disk = Vec::new();
+
+    let mut id: isize = 0;
     let mut i = 0;
     while i < disk_map_len {
         let block_number = (disk_map_bytes[i] - b'0') as usize;
@@ -26,109 +37,116 @@ fn map_diskmap_blockform(disk_map: &str) -> String {
             0
         };
 
-        //println!("disk_map_bytes[{}] = {}", i, disk_map_bytes[i]);
-        let id_char = std::char::from_digit(id % 10, 10).unwrap();
+        // Append 'block_number' times the current id
+        for _ in 0..block_number {
+            disk.push(id);
+        }
 
-        // Append the block number as `id_char`
-        blockform.extend(std::iter::repeat(id_char).take(block_number));
-
-        // Append free blocks as '.'
-        blockform.extend(std::iter::repeat('.').take(free_blocks));
+        // Append 'free_blocks' times -1
+        for _ in 0..free_blocks {
+            disk.push(-1);
+        }
 
         id += 1;
         i += 2;
     }
 
-    blockform
+    disk
 }
 
-fn defrag_blockform(blockform: String, debug: bool) -> String {
-    // We grab the rightmost block, and move it to the leftmost free space
-    // We place a '.' in its place
-    // We repeat this until there are no more blocks to move
-    let mut defragged: Vec<char> = blockform.chars().collect();
-
-    loop {
-        // Find the leftmost free space
-        let leftmost_free_space = defragged.iter().position(|&c| c == '.').unwrap();
-
-        // Find the rightmost block
-        if let Some(rightmost_block) = defragged.iter().rposition(|&c| c != '.') {
-            // If it's to the left of the leftmost free space, we're done
-            if rightmost_block < leftmost_free_space {
-                break;
-            }
-            // Move the rightmost block to the leftmost free space
-            defragged[leftmost_free_space] = defragged[rightmost_block];
-            defragged[rightmost_block] = '.';
+// Convert the disk (Vec<isize>) into a debug string like before, but only for small tests.
+// For IDs, we take id % 10 to produce a single digit character. Free space is '.'.
+fn disk_to_debug_string(disk: &Disk) -> String {
+    let mut s = String::new();
+    for &c in disk {
+        if c == -1 {
+            s.push('.');
         } else {
+            let digit = (c % 10) as u32;
+            s.push(std::char::from_digit(digit, 10).unwrap());
+        }
+    }
+    s
+}
+
+// This function performs the defragmentation process exactly as described.
+// Move one block at a time from the rightmost block to the leftmost gap until no moves remain.
+fn defrag_disk(mut disk: Disk, debug: bool) -> Disk {
+    loop {
+        let leftmost_gap = match disk.iter().position(|&x| x == -1) {
+            Some(pos) => pos,
+            None => break, // no gaps
+        };
+
+        let rightmost_block = match disk.iter().rposition(|&x| x != -1) {
+            Some(pos) => pos,
+            None => break, // no blocks (unlikely)
+        };
+
+        // If no block is strictly to the right of the leftmost gap, done
+        if rightmost_block <= leftmost_gap {
             break;
         }
 
-        // convert Vec<char> to String
+        // Move rightmost block into the gap
+        disk[leftmost_gap] = disk[rightmost_block];
+        disk[rightmost_block] = -1;
+
         if debug {
-            let defragged_str: String = defragged.iter().collect();
-            println!("{}", defragged_str);
+            println!("{}", disk_to_debug_string(&disk));
         }
     }
 
-    // Convert the vector of characters back into a string
-    defragged.into_iter().collect()
+    disk
 }
 
-// We need to calculate the checksum of the defragged disk
-// We multiply each digit by its position on the string, we can skip the 0th since it's * 0 = 0
-// then sum
-fn checksum(defragged: &String) -> usize {
+// Calculate the checksum as specified.
+// sum of (position * file_id) for each block (skip free spaces)
+fn checksum(disk: &Disk) -> usize {
     let mut sum = 0;
-    let mut index = 0;
-
-    for c in defragged.chars() {
-        if c != '.' {
-            if let Some(digit) = c.to_digit(10) {
-                sum += index * digit as usize;
-            }
+    for (i, &id) in disk.iter().enumerate() {
+        if id != -1 {
+            sum += i * (id as usize);
         }
-        index += 1;
     }
-
     sum
 }
 
+// Entry point for part1
 fn part1(disk_map: &str) -> usize {
-    // map diskmap to
-    let blockform = map_diskmap_blockform(disk_map);
-    //println!("{:?}", blockform);
-    let defragged = defrag_blockform(blockform, false);
-    //println!("{:?}", defragged);
+    let disk = map_diskmap_blockform(disk_map);
+    let defragged = defrag_disk(disk, false);
+    println!("{}",disk_to_debug_string(&defragged));
     checksum(&defragged)
 }
 
 fn main() {
-    let disk_map = aoc::utils::load_input_as_string("inputs/9.txt");
-    println!("Part 1: {}", part1(&disk_map));
+    let disk_map = load_input("inputs/9.txt");
+    println!("Part 1: {}", part1(&disk_map)); // Part 1: 6385338159127
 }
 
+// Tests
 #[test]
 fn test_map_diskmap_blockform() {
-    assert_eq!(map_diskmap_blockform("12345"), "0..111....22222");
-    assert_eq!(
-        map_diskmap_blockform("2333133121414131402"),
-        "00...111...2...333.44.5555.6666.777.888899"
-    )
+    // For these small tests, IDs fit in a single digit anyway.
+    let d = map_diskmap_blockform("12345");
+    assert_eq!(disk_to_debug_string(&d), "0..111....22222");
+
+    let d2 = map_diskmap_blockform("2333133121414131402");
+    assert_eq!(disk_to_debug_string(&d2), "00...111...2...333.44.5555.6666.777.888899");
 }
 
 #[test]
 fn test_defrag() {
+    let d = map_diskmap_blockform("12345");
+    let df = defrag_disk(d, true);
+    // After defrag, using debug string:
+    assert_eq!(disk_to_debug_string(&df), "022111222......");
+
+    let d2 = map_diskmap_blockform("2333133121414131402");
+    let df2 = defrag_disk(d2, true);
     assert_eq!(
-        defrag_blockform("0..111....22222".to_string(), true),
-        "022111222......"
-    );
-    assert_eq!(
-        defrag_blockform(
-            "00...111...2...333.44.5555.6666.777.888899".to_string(),
-            true
-        ),
+        disk_to_debug_string(&df2),
         "0099811188827773336446555566.............."
-    )
+    );
 }
