@@ -110,6 +110,18 @@ pub mod utils {
         pub fn manhattan_distance(&self, other: &Coord) -> i32 {
             (self.x - other.x).abs() + (self.y - other.y).abs()
         }
+
+        pub fn midpoint(&self, b: &Coord) -> Option<Coord> {
+            let dx = (b.x - self.x) / 2;
+            let dy = (b.y - self.y) / 2;
+
+            // Check if the Manhattan distance is evenly divisible
+            if (b.x - self.x).abs() % 2 == 0 && (b.y - self.y).abs() % 2 == 0 {
+                Some(Coord::new(self.x + dx, self.y + dy))
+            } else {
+                None
+            }
+        }
     }
 
     impl PartialEq for Coord {
@@ -199,14 +211,13 @@ pub mod utils {
     pub fn test_split_and_parse() {
         let input = "42, 15, 8, 23";
         let result: Result<Vec<u32>, _> = split_and_parse(input, ",");
-         match result {
+        match result {
             Ok(parsed) => {
                 println!("Parsed numbers: {:?}", parsed);
                 assert_eq!(parsed.iter().sum::<u32>(), 88);
-            },
+            }
             Err(e) => println!("Error parsing input: {:?}", e),
         }
-
 
         let bool_input = "true,false,true";
         let bool_result: Result<Vec<bool>, _> = split_and_parse(bool_input, ",");
@@ -219,14 +230,9 @@ pub mod utils {
     #[test]
     pub fn test_dimensions_cols_rows() {
         // (5,2)
-        let a = vec![
-          vec!['a','b','c','d','e'],
-          vec!['1','2','3','4','5']
-        ];
-        assert_eq!(dimensions_cols_rows(&a), (5,2));
-        let b = vec![
-          vec!['a']
-        ];
-        assert_eq!(dimensions_cols_rows(&b), (1,1));
+        let a = vec![vec!['a', 'b', 'c', 'd', 'e'], vec!['1', '2', '3', '4', '5']];
+        assert_eq!(dimensions_cols_rows(&a), (5, 2));
+        let b = vec![vec!['a']];
+        assert_eq!(dimensions_cols_rows(&b), (1, 1));
     }
 }
