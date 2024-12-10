@@ -126,14 +126,14 @@ impl Guard {
     }
 }
 
-fn print_map(map: &Vec<Vec<char>>) {
-    for row in map.iter() {
-        for col in row.iter() {
-            print!(" {} ", col);
-        }
-        println!();
-    }
-}
+// fn print_map(map: &Vec<Vec<char>>) {
+//     for row in map.iter() {
+//         for col in row.iter() {
+//             print!(" {} ", col);
+//         }
+//         println!();
+//     }
+// }
 
 fn print_map_and_visited(map: &Vec<Vec<char>>, guard: &Guard) {
     for (row_num, row) in map.iter().enumerate() {

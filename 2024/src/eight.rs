@@ -1,7 +1,12 @@
 use aoc::utils::{load_input_as_char_matrix, Coord};
 use std::collections::{HashMap, HashSet};
 
-fn collect_antennas_by_frequency(input: &Vec<Vec<char>>, antennas: &mut HashMap<char, Vec<Coord>>, rows: usize, cols: usize) {
+fn collect_antennas_by_frequency(
+    input: &Vec<Vec<char>>,
+    antennas: &mut HashMap<char, Vec<Coord>>,
+    rows: usize,
+    cols: usize,
+) {
     for y in 0..rows {
         for x in 0..cols {
             let c = input[y][x];

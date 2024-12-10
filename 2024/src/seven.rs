@@ -20,7 +20,6 @@ fn parse_input(input: &str) -> Vec<(i64, Vec<i64>)> {
         .collect()
 }
 
-
 /// Calculate the number of digits in a number
 fn num_digits(n: i64) -> u32 {
     if n == 0 {
@@ -29,7 +28,6 @@ fn num_digits(n: i64) -> u32 {
         (n as f64).log10().floor() as u32 + 1
     }
 }
-
 
 /// Recursively check if the target value can be achieved
 fn can_match_target(
@@ -48,26 +46,43 @@ fn can_match_target(
     let next_number = numbers[current_index];
 
     // Try addition
-    if can_match_target(numbers, target, current_index + 1, current_value + next_number, enable_concatenation) {
+    if can_match_target(
+        numbers,
+        target,
+        current_index + 1,
+        current_value + next_number,
+        enable_concatenation,
+    ) {
         return true;
     }
 
     // Try multiplication
-    if can_match_target(numbers, target, current_index + 1, current_value * next_number, enable_concatenation) {
+    if can_match_target(
+        numbers,
+        target,
+        current_index + 1,
+        current_value * next_number,
+        enable_concatenation,
+    ) {
         return true;
     }
 
     // Try concatenation if enabled
     if enable_concatenation {
         let concatenated = current_value * 10i64.pow(num_digits(next_number)) + next_number;
-        if can_match_target(numbers, target, current_index + 1, concatenated, enable_concatenation) {
+        if can_match_target(
+            numbers,
+            target,
+            current_index + 1,
+            concatenated,
+            enable_concatenation,
+        ) {
             return true;
         }
     }
 
     false
 }
-
 
 /// Check if the equation is valid for the given test value using backtracking
 fn is_equation_valid(test_value: i64, numbers: &[i64], enable_concatenation: bool) -> bool {

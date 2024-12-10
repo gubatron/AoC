@@ -1,7 +1,3 @@
-use std::fs::File;
-use std::io::{self, BufRead};
-use std::path::Path;
-
 // We'll represent the disk as a vector of isize:
 // - file block: its ID as a positive number (or zero)
 // - free space: -1
@@ -126,12 +122,16 @@ fn find_file_run(disk: &Disk, file_id: isize) -> Option<(usize, usize)> {
 
 // Find a contiguous run of free space (-1) to the left of `file_start` that can fit `file_length` blocks.
 // Return (start_of_free_run) of where to place the file.
-fn find_suitable_free_run_to_left(disk: &Disk, file_start: usize, file_length: usize) -> Option<usize> {
+fn find_suitable_free_run_to_left(
+    disk: &Disk,
+    file_start: usize,
+    file_length: usize,
+) -> Option<usize> {
     // We want a contiguous run of -1 somewhere before file_start
     // We'll scan from left to right for free runs that end before file_start
     let mut free_start = None;
     let mut free_len = 0;
-    let mut best_start = None;
+    let best_start = None;
 
     for i in 0..file_start {
         if disk[i] == -1 {
@@ -168,7 +168,7 @@ fn find_suitable_free_run_to_left(disk: &Disk, file_start: usize, file_length: u
 fn move_file(disk: &mut Disk, file_start: usize, file_length: usize, free_start: usize) {
     let file_id = disk[file_start];
     // Clear the old location
-    for i in file_start..file_start+file_length {
+    for i in file_start..file_start + file_length {
         disk[i] = -1;
     }
     // Place file at the free run start
@@ -177,16 +177,11 @@ fn move_file(disk: &mut Disk, file_start: usize, file_length: usize, free_start:
     }
 }
 
-
-
-
-
-
 // Entry point for part1
 fn part1(disk_map: &str) -> usize {
     let disk = map_diskmap_blockform(disk_map);
     let defragged = defrag_disk(disk, false);
-    println!("{}",disk_to_debug_string(&defragged));
+    println!("{}", disk_to_debug_string(&defragged));
     checksum(&defragged)
 }
 
@@ -211,7 +206,6 @@ fn part2(disk_map: &str) -> usize {
     checksum(&disk)
 }
 
-
 fn main() {
     let disk_map = aoc::utils::load_input_as_string("inputs/9.txt");
     println!("Part 1: {}", part1(&disk_map)); // Part 1: 6385338159127
@@ -226,7 +220,10 @@ fn test_map_diskmap_blockform() {
     assert_eq!(disk_to_debug_string(&d), "0..111....22222");
 
     let d2 = map_diskmap_blockform("2333133121414131402");
-    assert_eq!(disk_to_debug_string(&d2), "00...111...2...333.44.5555.6666.777.888899");
+    assert_eq!(
+        disk_to_debug_string(&d2),
+        "00...111...2...333.44.5555.6666.777.888899"
+    );
 }
 
 #[test]
