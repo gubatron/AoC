@@ -134,7 +134,7 @@ fn build_subgraph(update: &[i32], graph: &HashMap<i32, Vec<i32>>) -> HashMap<i32
 
 // https://adventofcode.com/2024/day/5
 fn main() {
-    let input = aoc::utils::load_input_lines_as_vec_str("5.txt");
+    let input = aoc::utils::load_input_lines_as_vec_str("inputs/5.txt");
 
     // the rules will be the first lines until we get an empty line
     let mut rules = Vec::new();

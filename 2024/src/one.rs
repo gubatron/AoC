@@ -24,7 +24,7 @@ fn part2(a: &Vec<u32>, b: &Vec<u32>) -> u32 {
 }
 
 fn main() {
-    let lines = load_input_lines_as_vec_str("1.txt");
+    let lines = load_input_lines_as_vec_str("inputs/1.txt");
     let tuples: Vec<(u32, u32)> = lines
         .into_iter()
         .map(|line| {

@@ -197,7 +197,7 @@ fn clone_map(map: &Vec<Vec<char>>) -> Vec<Vec<char>> {
 fn part1(mut guard: Guard, map: &Vec<Vec<char>>, debug: bool) -> usize {
     let mut cloned_map = clone_map(&map);
     guard.do_a_round(&mut cloned_map, debug);
-    print_map_and_visited(&cloned_map, &guard);
+    //print_map_and_visited(&cloned_map, &guard);
     guard.num_distinct_visited()
 }
 
@@ -249,12 +249,12 @@ fn part2(guard: Guard, map: &Vec<Vec<char>>, debug: bool) -> usize {
 
 fn main() {
     println!("Day 6!");
-    let map = load_input_as_char_matrix("6.txt");
+    let map = load_input_as_char_matrix("inputs/6.txt");
     let guard = pinpoint_guard(&map);
-    println!("======");
-    println!("{}", guard);
-    print_map(&map);
-    println!("======\n");
+    // println!("======");
+    // println!("{}", guard);
+    // print_map(&map);
+    // println!("======\n");
 
     // Part 1: 4939
     println!("Part 1: {}", part1(guard.clone(), &map, false));

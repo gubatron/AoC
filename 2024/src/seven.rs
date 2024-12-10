@@ -96,7 +96,7 @@ fn part2(input: &str) -> i64 {
 }
 
 fn main() {
-    let input = load_input_as_string("7.txt"); // Replace with your input file path
+    let input = load_input_as_string("inputs/7.txt"); // Replace with your input file path
     println!("Part 1: {}", part1(input.as_str())); // Part 1: 2437272016585
     println!("Part 2: {}", part2(input.as_str())); // Part 2: 162987117690649
 }

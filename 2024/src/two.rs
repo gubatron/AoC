@@ -79,7 +79,7 @@ fn part2(lines: &Vec<String>) -> i32 {
 }
 
 fn main() {
-    let lines = load_input_lines_as_vec_str("2.txt");
+    let lines = load_input_lines_as_vec_str("../inputs/2.txt");
     println!("{}", format!("Part 1: {}", part1(&lines)));
     println!("{}", format!("Part 2: {}", part2(&lines)));
 }

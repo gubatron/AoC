@@ -79,10 +79,10 @@ fn count_x_mas_patterns(haystack_grid: &Vec<Vec<char>>) -> usize {
         let bottom_left = haystack_grid[x + 1][y - 1];
         let center = haystack_grid[x][y];
 
-        println!(
-            "Checking ({}, {}): TL={}, BR={}, TR={}, BL={}, C={}",
-            x, y, top_left, bottom_right, top_right, bottom_left, center
-        );
+        // println!(
+        //     "Checking ({}, {}): TL={}, BR={}, TR={}, BL={}, C={}",
+        //     x, y, top_left, bottom_right, top_right, bottom_left, center
+        // );
 
         center == 'A'
             && ((top_left == 'M' && top_right == 'M' && bottom_left == 'S' && bottom_right == 'S')
@@ -103,7 +103,7 @@ fn count_x_mas_patterns(haystack_grid: &Vec<Vec<char>>) -> usize {
     for i in 1..rows - 1 {
         for j in 1..cols - 1 {
             if is_x_mas(i, j) {
-                println!("Pattern found at ({}, {})", i, j);
+                //println!("Pattern found at ({}, {})", i, j);
                 pattern_count += 1;
             }
         }
@@ -165,7 +165,7 @@ fn main() {
     //     vec!['M', 'A', 'M', 'M', 'M', 'X', 'M', 'M', 'M', 'M'],
     //     vec!['M', 'X', 'M', 'X', 'A', 'X', 'M', 'A', 'S', 'X'],
     // ];
-    let haystack: Vec<Vec<char>> = load_input_as_char_matrix("4.txt");
+    let haystack: Vec<Vec<char>> = load_input_as_char_matrix("inputs/4.txt");
     println!("Part 1: {}", part1("XMAS", &haystack));
     println!("Part 2: {}", part2(&haystack));
 }

@@ -112,7 +112,7 @@ fn part2(input: &Vec<Vec<char>>) -> usize {
 }
 
 fn main() {
-    let input = load_input_as_char_matrix("8.txt");
+    let input = load_input_as_char_matrix("inputs/8.txt");
     println!("Part 1: {}", part1(&input)); // Part 1: 252
     println!("Part 2: {}", part2(&input)); // Part 2: 839
 }
