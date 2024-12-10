@@ -41,16 +41,53 @@ fn map_diskmap_blockform(disk_map: &str) -> String {
     blockform
 }
 
+fn defrag_blockform(blockform: String, debug: bool) -> String {
+    // We grab the rightmost block, and move it to the leftmost free space
+    // We place a '.' in its place
+    // We repeat this until there are no more blocks to move
+    let mut defragged: Vec<char> = blockform.chars().collect();
+
+    loop {
+        // Find the leftmost free space
+        let leftmost_free_space = defragged.iter().position(|&c| c == '.').unwrap();
+
+        // Find the rightmost block
+        if let Some(rightmost_block) = defragged.iter().rposition(|&c| c != '.') {
+            // If it's to the left of the leftmost free space, we're done
+            if rightmost_block < leftmost_free_space {
+                break;
+            }
+            // Move the rightmost block to the leftmost free space
+            defragged[leftmost_free_space] = defragged[rightmost_block];
+            defragged[rightmost_block] = '.';
+        } else {
+            break;
+        }
+
+        // convert Vec<char> to String
+        if debug {
+            let defragged_str: String = defragged.iter().collect();
+            println!("{}", defragged_str);
+        }
+    }
+
+    // Convert the vector of characters back into a string
+    defragged.into_iter().collect()
+}
+
 fn part1(disk_map: &str) -> i32 {
     // map diskmap to
     let blockform = map_diskmap_blockform(disk_map);
     println!("{:?}", blockform);
+    let defragged = defrag_blockform(blockform, true);
+    println!("{:?}", defragged);
     0
 }
 
 fn main() {
     let disk_map = aoc::utils::load_input_as_string("inputs/9.test.txt");
     println!("Part 1: {}", part1(&disk_map));
+    println!("Part 1: {}", part1("12345"));
 }
 
 #[test]
@@ -59,5 +96,17 @@ fn test_map_diskmap_blockform() {
     assert_eq!(
         map_diskmap_blockform("2333133121414131402"),
         "00...111...2...333.44.5555.6666.777.888899"
+    )
+}
+
+#[test]
+fn test_defrag() {
+    assert_eq!(
+        defrag_blockform("0..111....22222".to_string(), true),
+        "022111222......"
+    );
+    assert_eq!(
+        defrag_blockform("00...111...2...333.44.5555.6666.777.888899".to_string(), true),
+        "0099811188827773336446555566.............."
     )
 }
