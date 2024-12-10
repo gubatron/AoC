@@ -26,7 +26,8 @@ fn map_diskmap_blockform(disk_map: &str) -> String {
             0
         };
 
-        let id_char = std::char::from_digit(id, 10).unwrap();
+        //println!("disk_map_bytes[{}] = {}", i, disk_map_bytes[i]);
+        let id_char = std::char::from_digit(id % 10, 10).unwrap();
 
         // Append the block number as `id_char`
         blockform.extend(std::iter::repeat(id_char).take(block_number));
@@ -75,19 +76,37 @@ fn defrag_blockform(blockform: String, debug: bool) -> String {
     defragged.into_iter().collect()
 }
 
-fn part1(disk_map: &str) -> i32 {
+// We need to calculate the checksum of the defragged disk
+// We multiply each digit by its position on the string, we can skip the 0th since it's * 0 = 0
+// then sum
+fn checksum(defragged: &String) -> usize {
+    let mut sum = 0;
+    let mut index = 0;
+
+    for c in defragged.chars() {
+        if c != '.' {
+            if let Some(digit) = c.to_digit(10) {
+                sum += index * digit as usize;
+            }
+        }
+        index += 1;
+    }
+
+    sum
+}
+
+fn part1(disk_map: &str) -> usize {
     // map diskmap to
     let blockform = map_diskmap_blockform(disk_map);
-    println!("{:?}", blockform);
-    let defragged = defrag_blockform(blockform, true);
-    println!("{:?}", defragged);
-    0
+    //println!("{:?}", blockform);
+    let defragged = defrag_blockform(blockform, false);
+    //println!("{:?}", defragged);
+    checksum(&defragged)
 }
 
 fn main() {
-    let disk_map = aoc::utils::load_input_as_string("inputs/9.test.txt");
+    let disk_map = aoc::utils::load_input_as_string("inputs/9.txt");
     println!("Part 1: {}", part1(&disk_map));
-    println!("Part 1: {}", part1("12345"));
 }
 
 #[test]
@@ -106,7 +125,10 @@ fn test_defrag() {
         "022111222......"
     );
     assert_eq!(
-        defrag_blockform("00...111...2...333.44.5555.6666.777.888899".to_string(), true),
+        defrag_blockform(
+            "00...111...2...333.44.5555.6666.777.888899".to_string(),
+            true
+        ),
         "0099811188827773336446555566.............."
     )
 }
