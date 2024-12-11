@@ -8,6 +8,10 @@ regex = "1.11.1"
 aoc = { path = "../utils/rust", version = "0.1.3" }
 
 [[bin]]
+name = "ten"
+path = "src/ten.rs"
+
+[[bin]]
 name = "nine"
 path = "src/nine.rs"
 
