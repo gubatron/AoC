@@ -104,6 +104,13 @@ pub mod utils {
         s.len()
     }
 
+    pub fn char_to_digit(c : char) -> Result<u32, String> {
+        if c < '0' || c > '9' {
+            return Err(format!("Invalid character {}", c))
+        }
+        Ok((c as u8 - b'0' as u8) as u32)
+    }
+
     #[derive(Debug, Eq, Hash, Copy, Clone, Ord, PartialOrd)]
     pub struct Coord {
         pub x: i32,
