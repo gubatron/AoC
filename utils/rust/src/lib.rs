@@ -63,6 +63,14 @@ pub mod utils {
         input.iter().map(|line| line.chars().collect()).collect()
     }
 
+    pub fn load_input_as_single_digit_matrix(filename: impl AsRef<Path> + Display) -> Vec<Vec<i32>> {
+        let input = load_input_lines_as_vec_str(filename);
+        input
+            .iter()
+            .map(|line| line.as_bytes().iter().map(|&c| (c - b'0') as i32).collect())
+            .collect()
+    }
+
     pub fn load_input_as_vec_char(filename: impl AsRef<Path> + Display) -> Vec<char> {
         let lines_vec = load_input_lines_as_vec_str(filename);
         let mut result = vec![];
@@ -234,5 +242,24 @@ pub mod utils {
         assert_eq!(dimensions_cols_rows(&a), (5, 2));
         let b = vec![vec!['a']];
         assert_eq!(dimensions_cols_rows(&b), (1, 1));
+    }
+
+    #[test]
+    pub fn test_load_input_as_single_digit_matrix() {
+        // 012345
+        // 678901
+        // 234567
+        // 890123
+        // 456789
+        let matrix = load_input_as_single_digit_matrix("single_digit_matrix.txt");
+        // matrix[y][x]
+        assert_eq!(matrix[2][3], 5);
+        let mut i = 0;
+        for row in matrix {
+            for cell in row {
+                assert_eq!(cell, i % 10);
+                i += 1;
+            }
+        }
     }
 }
