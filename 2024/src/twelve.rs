@@ -86,6 +86,64 @@ fn calculate_perimeter(area: &[Coord], grid: &[Vec<char>]) -> usize {
     perimeter
 }
 
+fn calculate_sides(area: &[Coord]) -> usize {
+    let cell_set: HashSet<_> = area.iter().cloned().collect();
+    area.iter().map(|&c| get_corners_for_coord(c, &cell_set)).sum()
+}
+
+fn get_corners_for_coord(coord: Coord, cell_set: &HashSet<Coord>) -> usize {
+    let Coord { x, y } = coord;
+
+    // Orthogonal neighbors
+    let top = (x as isize - 1, y as isize);
+    let right = (x as isize, y as isize + 1);
+    let down = (x as isize + 1, y as isize);
+    let left = (x as isize, y as isize - 1);
+
+    // We'll define a small helper to check membership
+    let in_area = |(r, c): (isize, isize)| {
+        if r < 0 || c < 0 {
+            return false;
+        }
+        cell_set.contains(&Coord { x: r as i32, y: c as i32 })
+    };
+
+    let mut count = 0;
+
+    // 1) Four orthogonal corners
+    // If top & right are out => corner
+    if !in_area(top) && !in_area(right) { count += 1; }
+    // right & down
+    if !in_area(right) && !in_area(down) { count += 1; }
+    // down & left
+    if !in_area(down) && !in_area(left) { count += 1; }
+    // left & top
+    if !in_area(left) && !in_area(top) { count += 1; }
+
+    // 2) Four diagonal corners
+    // top & right in area, but diagonal top-right out
+    if in_area(top) && in_area(right) {
+        let top_right = (top.0, right.1);
+        if !in_area(top_right) { count += 1; }
+    }
+    // right & down
+    if in_area(right) && in_area(down) {
+        let right_down = (down.0, right.1);
+        if !in_area(right_down) { count += 1; }
+    }
+    // down & left
+    if in_area(down) && in_area(left) {
+        let down_left = (down.0, left.1);
+        if !in_area(down_left) { count += 1; }
+    }
+    // left & top
+    if in_area(left) && in_area(top) {
+        let left_top = (top.0, left.1);
+        if !in_area(left_top) { count += 1; }
+    }
+
+    count
+}
 fn part1(grid: &[Vec<char>]) -> i32 {
     let areas = find_areas(grid);
 
@@ -100,7 +158,24 @@ fn part1(grid: &[Vec<char>]) -> i32 {
     sum
 }
 
+fn part2(grid: &[Vec<char>]) -> i32 {
+    let areas = find_areas(grid);
+
+    let mut sum = 0;
+    for (_char_type, char_areas) in &areas {
+        for area in char_areas {
+            let sides = calculate_sides(area);
+            sum += area.len() as i32 * sides as i32;
+            println!("Area {}: {}, Sides: {}", _char_type, area.len(), sides);
+        }
+    }
+
+    sum
+}
+
 fn main() {
     let grid = aoc::utils::load_input_as_char_matrix("inputs/12.txt");
     println!("Part 1: {}", part1(&grid)); // Part 1: 1456082
+    println!("Part 2: {}", part2(&grid)); // Part 2: 872382
+
 }
