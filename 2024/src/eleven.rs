@@ -96,8 +96,8 @@ fn test_transform() {
     println!("{:?}", &numbers);
     assert_eq!(transform(&numbers), expected);
     println!("Transformed arrangement: \n{:?}", &expected);
-
     let numbers2 = vec![125, 17];
+
     let expected2 = [
         2097446912, 14168, 4048, 2, 0, 2, 4, 40, 48, 2024, 40, 48, 80, 96, 2, 8, 6, 7, 6, 0, 3, 2,
     ];
