@@ -166,7 +166,6 @@ fn part2(grid: &[Vec<char>]) -> i32 {
         for area in char_areas {
             let sides = calculate_sides(area);
             sum += area.len() as i32 * sides as i32;
-            println!("Area {}: {}, Sides: {}", _char_type, area.len(), sides);
         }
     }
 
@@ -177,5 +176,4 @@ fn main() {
     let grid = aoc::utils::load_input_as_char_matrix("inputs/12.txt");
     println!("Part 1: {}", part1(&grid)); // Part 1: 1456082
     println!("Part 2: {}", part2(&grid)); // Part 2: 872382
-
 }
