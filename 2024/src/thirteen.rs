@@ -1,3 +1,4 @@
+use std::cmp::Reverse;
 use aoc::utils::{load_input_break_by_empty_lines_as_vec_str, Coord};
 use regex::Regex;
 use std::collections::{BinaryHeap, HashMap, HashSet};
@@ -91,11 +92,11 @@ fn build_possible_graph(config: &PrizeConfig) -> HashMap<Coord, Vec<(Coord, i32)
             graph.insert(loc, vec![(b_loc, config.button_b.cost)]);
             return graph;
         }
-        if a_loc.x < config.prize.x && a_loc.y < config.prize.y {
+        if a_loc.x < config.prize.x && a_loc.y < config.prize.y && !visited.contains(&a_loc) {
             queue.push(a_loc);
             graph.insert(loc, vec![(a_loc, config.button_a.cost)]);
         }
-        if b_loc.x < config.prize.x && b_loc.y < config.prize.y {
+        if b_loc.x < config.prize.x && b_loc.y < config.prize.y && !visited.contains(&b_loc){
             queue.push(b_loc);
             if let Some(loc_vec) = graph.get(&loc) {
                 let mut new_vec = loc_vec.clone();
@@ -116,17 +117,17 @@ fn build_possible_graph(config: &PrizeConfig) -> HashMap<Coord, Vec<(Coord, i32)
 
 fn least_cost_path(start: Coord, graph: &HashMap<Coord, Vec<(Coord, i32)>>) -> HashMap<Coord, i32> {
     let mut distances = HashMap::<Coord, i32>::new();
-    let mut queue = BinaryHeap::<(Coord, i32)>::new();
-    queue.push((start, 0));
+    let mut queue = BinaryHeap::<Reverse<(Coord, i32)>>::new();
+    queue.push(Reverse((start, 0)));
     distances.insert(start, 0);
     while !queue.is_empty() {
-        let (node, dist) = queue.pop().unwrap();
+        let Reverse((node, dist)) = queue.pop().unwrap();
         if let Some(neighbors) = graph.get(&node) {
             for neigh_tuple in neighbors {
                 let new_dist = neigh_tuple.1 + dist;
                 if !distances.contains_key(&neigh_tuple.0) || new_dist < distances[&neigh_tuple.0] {
                     distances.insert(neigh_tuple.0, new_dist);
-                    queue.push((neigh_tuple.0, new_dist));
+                    queue.push(Reverse((neigh_tuple.0, new_dist)));
                 }
             }
         }
@@ -136,29 +137,30 @@ fn least_cost_path(start: Coord, graph: &HashMap<Coord, Vec<(Coord, i32)>>) -> H
 
 fn part1(prize_configs: Vec<PrizeConfig>) -> i32 {
     // timestamp now
-    let mut i = 1;
+    let mut _i = 1;
     let mut total_cost = 0;
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards")
+        .as_millis();
+
     for config in prize_configs {
-        println!("{}", i);
-        i += 1;
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards")
-            .as_millis();
+        _i += 1;
         let g = build_possible_graph(&config);
         if g.is_empty() {
-            println!("No path possible");
+            //println!("No path possible");
             continue;
         }
         let distances: HashMap<Coord, i32> = least_cost_path(Coord { x: 0, y: 0 }, &g);
         total_cost += distances[&config.prize];
-        let then = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards")
-            .as_millis();
-        println!("Time taken: {:?}ms", then - now);
-        println!("=====================");
     }
+    let then = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards")
+        .as_millis();
+
+    println!("Time taken: {:?}ms", then - now);
+    println!("=====================");
     total_cost
 }
 
