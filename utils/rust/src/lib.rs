@@ -169,8 +169,9 @@ pub mod utils {
     {
         let mut distances = HashMap::<T, i32>::new();
         let mut queue = BinaryHeap::<(i32, T)>::new();
-        queue.push((0, start));
         distances.insert(start, 0);
+        queue.push((0, start));
+
         while !queue.is_empty() {
             let (dist, node) = queue.pop().unwrap();
             if let Some(neighbors) = graph.get(&node) {
