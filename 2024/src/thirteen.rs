@@ -108,7 +108,7 @@ fn build_possible_graph(config: &PrizeConfig) -> HashMap<Coord, Vec<(Coord, i32)
         visited.insert(loc);
         // NO PATH IS POSSIBLE
         if queue.is_empty() {
-            return HashMap::new()
+            return HashMap::new();
         }
         loc = queue.pop().unwrap();
     }
@@ -116,17 +116,17 @@ fn build_possible_graph(config: &PrizeConfig) -> HashMap<Coord, Vec<(Coord, i32)
 
 fn least_cost_path(start: Coord, graph: &HashMap<Coord, Vec<(Coord, i32)>>) -> HashMap<Coord, i32> {
     let mut distances = HashMap::<Coord, i32>::new();
-    let mut queue = BinaryHeap::<(i32, Coord)>::new();
-    queue.push((0, start));
+    let mut queue = BinaryHeap::<(Coord, i32)>::new();
+    queue.push((start, 0));
     distances.insert(start, 0);
     while !queue.is_empty() {
-        let (dist, node) = queue.pop().unwrap();
+        let (node, dist) = queue.pop().unwrap();
         if let Some(neighbors) = graph.get(&node) {
             for neigh_tuple in neighbors {
                 let new_dist = neigh_tuple.1 + dist;
                 if !distances.contains_key(&neigh_tuple.0) || new_dist < distances[&neigh_tuple.0] {
                     distances.insert(neigh_tuple.0, new_dist);
-                    queue.push((new_dist, neigh_tuple.0));
+                    queue.push((neigh_tuple.0, new_dist));
                 }
             }
         }
