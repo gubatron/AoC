@@ -1,12 +1,13 @@
-use std::cmp::Reverse;
-use aoc::utils::{load_input_break_by_empty_lines_as_vec_str, Coord};
+use aoc::utils::{load_input_break_by_empty_lines_as_vec_str, CoordU64};
 use regex::Regex;
+use std::cmp::Reverse;
 use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+
 #[derive(Debug)]
 struct ButtonConfig {
-    movement: Coord,
+    movement: CoordU64,
     cost: i32,
 }
 
@@ -14,18 +15,18 @@ struct ButtonConfig {
 struct PrizeConfig {
     button_a: ButtonConfig,
     button_b: ButtonConfig,
-    prize: Coord,
+    prize: CoordU64,
 }
 
 fn parse_button(input: &str, input_cost: i32) -> Option<ButtonConfig> {
     let button_regex = "X\\+(\\d+), Y\\+(\\d+)";
     let re = Regex::new(button_regex).unwrap();
     if let Some(captures) = re.captures(input) {
-        let x_group: i32 = captures.get(1).unwrap().as_str().parse().expect("NaN");
-        let y_group: i32 = captures.get(2).unwrap().as_str().parse().expect("NaN");
+        let x_group: u64 = captures.get(1).unwrap().as_str().parse().expect("NaN");
+        let y_group: u64 = captures.get(2).unwrap().as_str().parse().expect("NaN");
 
         Some(ButtonConfig {
-            movement: Coord {
+            movement: CoordU64 {
                 x: x_group,
                 y: y_group,
             },
@@ -36,15 +37,15 @@ fn parse_button(input: &str, input_cost: i32) -> Option<ButtonConfig> {
     }
 }
 
-fn parse_prize_coord(input: &str) -> Option<Coord> {
+fn parse_prize_coord(input: &str) -> Option<CoordU64> {
     //Prize: X=8400, Y=5400
     let prize_regex = "X=(\\d+), Y=(\\d+)";
     let re = Regex::new(prize_regex).unwrap();
     if let Some(captures) = re.captures(input) {
-        let x_group: i32 = captures.get(1).unwrap().as_str().parse().expect("NaN");
-        let y_group: i32 = captures.get(2).unwrap().as_str().parse().expect("NaN");
+        let x_group: u64 = captures.get(1).unwrap().as_str().parse().expect("NaN");
+        let y_group: u64 = captures.get(2).unwrap().as_str().parse().expect("NaN");
 
-        Some(Coord {
+        Some(CoordU64 {
             x: x_group,
             y: y_group,
         })
@@ -60,27 +61,27 @@ fn parse_config_prize(input: String) -> PrizeConfig {
     let prize_str = input_vec[2];
     let parsed_button_a: ButtonConfig = parse_button(button_a_str, 3).unwrap();
     let parsed_button_b: ButtonConfig = parse_button(button_b_str, 1).unwrap();
-    let parsed_prize: Coord = parse_prize_coord(prize_str).unwrap();
+    let parsed_prize: CoordU64 = parse_prize_coord(prize_str).unwrap();
     PrizeConfig {
         button_a: parsed_button_a,
         button_b: parsed_button_b,
         prize: parsed_prize,
     }
 }
-fn build_possible_graph(config: &PrizeConfig) -> HashMap<Coord, Vec<(Coord, i32)>> {
-    let mut graph: HashMap<Coord, Vec<(Coord, i32)>> = HashMap::new();
-    let mut visited: HashSet<Coord> = HashSet::new();
-    let mut loc = Coord { x: 0, y: 0 };
-    let mut queue: Vec<Coord> = vec![];
+fn build_possible_graph(config: &PrizeConfig) -> HashMap<CoordU64, Vec<(CoordU64, i32)>> {
+    let mut graph: HashMap<CoordU64, Vec<(CoordU64, i32)>> = HashMap::new();
+    let mut visited: HashSet<CoordU64> = HashSet::new();
+    let mut loc = CoordU64 { x: 0, y: 0 };
+    let mut queue: Vec<CoordU64> = vec![];
     loop {
         while visited.contains(&loc) && !queue.is_empty() {
             loc = queue.pop().unwrap();
         }
-        let a_loc = Coord {
+        let a_loc = CoordU64 {
             x: loc.x + config.button_a.movement.x,
             y: loc.y + config.button_a.movement.y,
         };
-        let b_loc = Coord {
+        let b_loc = CoordU64 {
             x: loc.x + config.button_b.movement.x,
             y: loc.y + config.button_b.movement.y,
         };
@@ -96,7 +97,7 @@ fn build_possible_graph(config: &PrizeConfig) -> HashMap<Coord, Vec<(Coord, i32)
             queue.push(a_loc);
             graph.insert(loc, vec![(a_loc, config.button_a.cost)]);
         }
-        if b_loc.x < config.prize.x && b_loc.y < config.prize.y && !visited.contains(&b_loc){
+        if b_loc.x < config.prize.x && b_loc.y < config.prize.y && !visited.contains(&b_loc) {
             queue.push(b_loc);
             if let Some(loc_vec) = graph.get(&loc) {
                 let mut new_vec = loc_vec.clone();
@@ -115,9 +116,12 @@ fn build_possible_graph(config: &PrizeConfig) -> HashMap<Coord, Vec<(Coord, i32)
     }
 }
 
-fn least_cost_path(start: Coord, graph: &HashMap<Coord, Vec<(Coord, i32)>>) -> HashMap<Coord, i32> {
-    let mut distances = HashMap::<Coord, i32>::new();
-    let mut queue = BinaryHeap::<Reverse<(Coord, i32)>>::new();
+fn least_cost_path(
+    start: CoordU64,
+    graph: &HashMap<CoordU64, Vec<(CoordU64, i32)>>,
+) -> HashMap<CoordU64, i32> {
+    let mut distances = HashMap::<CoordU64, i32>::new();
+    let mut queue = BinaryHeap::<Reverse<(CoordU64, i32)>>::new();
     queue.push(Reverse((start, 0)));
     distances.insert(start, 0);
     while !queue.is_empty() {
@@ -151,7 +155,7 @@ fn part1(prize_configs: Vec<PrizeConfig>) -> i32 {
             //println!("No path possible");
             continue;
         }
-        let distances: HashMap<Coord, i32> = least_cost_path(Coord { x: 0, y: 0 }, &g);
+        let distances: HashMap<CoordU64, i32> = least_cost_path(CoordU64 { x: 0, y: 0 }, &g);
         total_cost += distances[&config.prize];
     }
     let then = SystemTime::now()

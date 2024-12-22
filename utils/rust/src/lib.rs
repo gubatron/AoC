@@ -187,6 +187,20 @@ pub mod utils {
         distances
     }
 
+    #[derive(Debug, Eq, Ord, PartialOrd, Hash, Clone, Copy)]
+    pub struct CoordU64 {
+        pub x: u64,
+        pub y: u64,
+    }
+
+    impl PartialEq for CoordU64 {
+        fn eq(&self, other: &Self) -> bool {
+            self.x == other.x && self.y == other.y
+        }
+    }
+
+    // TODO Implement neighborts and other functions for CoordU64
+
     pub fn dimensions_cols_rows<T>(matrix: &Vec<Vec<T>>) -> (usize, usize) {
         (matrix[0].len(), matrix.len())
     }
