@@ -252,6 +252,47 @@ fn solve_for_n_and_m(matrix: [[u64; 2]; 2], vector: [u64; 2]) -> Option<(u64, u6
     Some((n as u64, m as u64))
 }
 
+// Alternate solution by using the inverse of the coefficient matrix
+//
+// Coefficient Matrix = [ Xa, Xb ]
+//                      [ Ya, Yb ]
+//
+// Coefficient Matrix * NM = Prize Vector
+// NM = Coefficient Matrix^-1 * Prize Vector
+fn solve_for_n_and_m_inverse(matrix: [[u64; 2]; 2], vector: [u64; 2]) -> Option<(u64, u64)> {
+    let xa = matrix[0][0] as i64;
+    let xb = matrix[0][1] as i64;
+    let ya = matrix[1][0] as i64;
+    let yb = matrix[1][1] as i64;
+    let prize_x = vector[0] as i64;
+    let prize_y = vector[1] as i64;
+
+    // Calculate the determinant
+    let determinant = xa * yb - xb * ya;
+
+    if determinant == 0 {
+        // Determinant is zero: no solutions
+        return None;
+    }
+
+    // Compute the inverse matrix components (scaled by determinant)
+    let inv_xa = yb;
+    let inv_xb = -xb;
+    let inv_ya = -ya;
+    let inv_yb = xa;
+
+    // Multiply the inverse matrix by the prize vector
+    let n = (inv_xa * prize_x + inv_xb * prize_y) / determinant;
+    let m = (inv_ya * prize_x + inv_yb * prize_y) / determinant;
+
+    // Check if n and m are valid (non-negative and integer)
+    if n < 0 || m < 0 || (inv_xa * prize_x + inv_xb * prize_y) % determinant != 0 || (inv_ya * prize_x + inv_yb * prize_y) % determinant != 0 {
+        return None;
+    }
+
+    Some((n as u64, m as u64))
+}
+
 fn part1(prize_configs: &Vec<PrizeConfig>) -> i32 {
     // timestamp now
     let mut _i = 1;
@@ -263,7 +304,7 @@ fn part1(prize_configs: &Vec<PrizeConfig>) -> i32 {
             //println!("No path possible");
             continue;
         }
-        if let Some((n, m)) = solve_for_n_and_m(coefficient_matrix, target_vector) {
+        if let Some((n, m)) = solve_for_n_and_m_inverse(coefficient_matrix, target_vector) {
             let cost = n as i32 * config.button_a.cost + m as i32 * config.button_b.cost;
             //println!("n: {}, m: {}, cost: {}", n, m, cost);
             total_cost += cost;
@@ -285,7 +326,7 @@ fn part2(prize_configs: Vec<PrizeConfig>) -> i64 {
         if !has_solutions(coefficient_matrix, target_vector) {
             continue;
         }
-        if let Some((n, m)) = solve_for_n_and_m(coefficient_matrix, target_vector) {
+        if let Some((n, m)) = solve_for_n_and_m_inverse(coefficient_matrix, target_vector) {
             let cost =
                 n as i64 * config.button_a.cost as i64 + m as i64 * config.button_b.cost as i64;
             total_cost += cost;
