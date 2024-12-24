@@ -22,7 +22,7 @@ pub fn bfs_find_trailhead_score(
             continue; // Stop exploring past height 9
         }
 
-        for neighbor in aoc::utils::neighbors(&node, rows as i32, cols as i32, false) {
+        for neighbor in node.neighbors(rows as i32, cols as i32, false) {
             if !seen.contains(&neighbor) {
                 let neighbor_height = grid[neighbor.y as usize][neighbor.x as usize];
                 if neighbor_height == current_height + 1 {
@@ -57,7 +57,7 @@ pub fn bfs_find_distinct_paths(
             continue;
         }
 
-        for neighbor in aoc::utils::neighbors(&current_node, rows as i32, cols as i32, false) {
+        for neighbor in current_node.neighbors(rows as i32, cols as i32, false) {
             let neighbor_height = grid[neighbor.y as usize][neighbor.x as usize];
 
             if neighbor_height == current_height + 1 && !current_path.contains(&neighbor) {

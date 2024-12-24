@@ -63,7 +63,9 @@ pub mod utils {
         input.iter().map(|line| line.chars().collect()).collect()
     }
 
-    pub fn load_input_as_single_digit_matrix(filename: impl AsRef<Path> + Display) -> Vec<Vec<i32>> {
+    pub fn load_input_as_single_digit_matrix(
+        filename: impl AsRef<Path> + Display,
+    ) -> Vec<Vec<i32>> {
         let input = load_input_lines_as_vec_str(filename);
         input
             .iter()
@@ -104,9 +106,9 @@ pub mod utils {
         s.len()
     }
 
-    pub fn char_to_digit(c : char) -> Result<u32, String> {
+    pub fn char_to_digit(c: char) -> Result<u32, String> {
         if c < '0' || c > '9' {
-            return Err(format!("Invalid character {}", c))
+            return Err(format!("Invalid character {}", c));
         }
         Ok((c as u8 - b'0' as u8) as u32)
     }
@@ -137,30 +139,30 @@ pub mod utils {
                 None
             }
         }
+
+        pub fn neighbors(&self, rows: i32, cols: i32, consider_diagonals: bool) -> Vec<Coord> {
+            let mut friends = vec![];
+            let mut deltas = vec![(0, 1), (0, -1), (1, 0), (-1, 0)];
+            if consider_diagonals {
+                deltas.extend(vec![(-1, -1), (-1, 1), (1, -1), (1, 1)]);
+            }
+            for (dx, dy) in deltas {
+                // test swapping these
+                let y = self.y + dy;
+                let x = self.x + dx;
+
+                if x >= 0 && x < cols && y >= 0 && y < rows {
+                    friends.push(Coord::new(x, y));
+                }
+            }
+            friends
+        }
     }
 
     impl PartialEq for Coord {
         fn eq(&self, other: &Self) -> bool {
             self.x == other.x && self.y == other.y
         }
-    }
-
-    pub fn neighbors(node: &Coord, rows: i32, cols: i32, consider_diagonals: bool) -> Vec<Coord> {
-        let mut friends = vec![];
-        let mut deltas = vec![(0, 1), (0, -1), (1, 0), (-1, 0)];
-        if consider_diagonals {
-            deltas.extend(vec![(-1, -1), (-1, 1), (1, -1), (1, 1)]);
-        }
-        for (dx, dy) in deltas {
-            // test swapping these
-            let y = node.y + dy;
-            let x = node.x + dx;
-
-            if x >= 0 && x < cols && y >= 0 && y < rows {
-                friends.push(Coord::new(x, y));
-            }
-        }
-        friends
     }
 
     pub fn dijkstra<T>(start: T, graph: &HashMap<T, Vec<T>>) -> HashMap<T, i32>
@@ -283,5 +285,9 @@ pub mod utils {
                 i += 1;
             }
         }
+    }
+
+    pub fn euclidean_modulo(a: i32, b: i32) -> i32 {
+        ((a % b) + b) % b
     }
 }
