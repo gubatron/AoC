@@ -1,9 +1,7 @@
 use aoc::utils::{euclidean_modulo, Coord};
 use image::{ImageBuffer, Rgb};
-use minifb::{Window, WindowOptions};
 use std::fmt::{Debug, Formatter};
 use std::path::Path;
-
 
 #[derive(Clone)]
 struct Robot {
@@ -92,59 +90,29 @@ fn project_bots_onto_map(robots: &Vec<Robot>, map: &mut [[i32; 101]; 103]) {
     }
 }
 
-/// Converts the robot map into a pixel buffer.
-/// Each robot is represented by a specific color.
-/// Multiple robots in the same cell can be represented differently.
-fn update_window_buffer(map: &[[i32; 101]; 103], buffer: &mut Vec<u32>, scale: u32) {
-    // Define colors in ARGB format (0xAARRGGBB)
-    let empty_color = 0xFF000000;        // Black
-    let single_robot_color = 0xFFFFFFFF; // White
-    let multiple_robot_color = 0xFFFF0000; // Red
-
-    for y in 0..103 {
-        for x in 0..101 {
-            let robot_count = map[y][x];
-            let color = if robot_count == 1 {
-                single_robot_color
-            } else if robot_count > 1 {
-                multiple_robot_color
-            } else {
-                empty_color
-            };
-
-            for dy in 0..scale {
-                for dx in 0..scale {
-                    let pixel_x = x * scale as usize + dx as usize;
-                    let pixel_y = y * scale as usize + dy as usize;
-                    if pixel_x < 101 * scale as usize && pixel_y < 103 * scale as usize {
-                        let index = pixel_y * (101 * scale as usize) + pixel_x;
-                        buffer[index] = color;
-                    }
-                }
-            }
-        }
-    }
-}
-
-/// Renders the robot map to a PNG image with the current time in the filename.
+/// Renders the robot map to a BMP image with the current time in the filename.
 ///
 /// # Arguments
 ///
 /// * `map` - A 2D array representing the robot positions.
-/// * `time` - The current time in seconds.
+/// * `filename` - The path of the output BMP file.
 /// * `scale` - The scaling factor to enlarge the image for better visibility.
-///
+/// * `grid` - Whether to draw grid lines for each cell.
 /// # Example
 ///
 /// ```rust
-/// let map = [[0; 101]; 103];
-/// render_map_to_png(&map, 7548, 5).unwrap();
+/// let filename = format!("outputs/day_24_robots_at_{:07}.bmp", time);
+/// if let Err(e) = render_map_to_bmp(&map, &filename, scale, false) {
+///   eprintln!("Failed to render image at time {}: {}", time, e);
+/// } else {
+///   println!("Rendered image: {}", &filename);
+/// }
 /// ```
-fn render_map_to_png(
+fn render_map_to_bmp(
     map: &[[i32; 101]; 103],
-    time: usize,
+    filename: &str,
     scale: u32,
-    grid: bool
+    grid: bool,
 ) -> Result<(), image::ImageError> {
     // Define colors
     let empty_color = Rgb([0u8, 0u8, 0u8]); // Black for empty cells
@@ -193,26 +161,30 @@ fn render_map_to_png(
                 if x < 101 - 1 {
                     for dy in 0..scale {
                         if (y as u32) * scale + dy < img_height {
-                            img.put_pixel((x as u32 + 1) * scale, (y as u32) * scale + dy, grid_color);
+                            img.put_pixel(
+                                (x as u32 + 1) * scale,
+                                (y as u32) * scale + dy,
+                                grid_color,
+                            );
                         }
                     }
                 }
                 if y < 103 - 1 {
                     for dx in 0..scale {
                         if (x as u32) * scale + dx < img_width {
-                            img.put_pixel((x as u32) * scale + dx, (y as u32 + 1) * scale, grid_color);
+                            img.put_pixel(
+                                (x as u32) * scale + dx,
+                                (y as u32 + 1) * scale,
+                                grid_color,
+                            );
                         }
                     }
                 }
             }
-
         }
     }
 
-    // Format the filename with leading zeros (e.g., robots_at_0007548.png)
-    let filename = format!("outputs/robots_at_{:07}.bmp", time);
-
-    // Save the image as PNG
+    // Save the image as BMP
     img.save(Path::new(&filename))?;
     Ok(())
 }
@@ -278,27 +250,6 @@ fn part2(robots: &Vec<Robot>, tiles_wide: usize, tiles_tall: usize) -> usize {
 
     // Initialize window parameters
     let scale = 5; // Adjust for better visibility
-    let window_width = (101 * scale) as usize;
-    let window_height = (103 * scale) as usize;
-
-    // Create a window
-    let mut window = Window::new(
-        "Robot Simulation",
-        window_width,
-        window_height,
-        WindowOptions {
-            resize: false,
-            ..WindowOptions::default()
-        },
-    ).unwrap_or_else(|e| {
-        panic!("Unable to open window: {}", e);
-    });
-
-    // Initialize the pixel buffer
-    let mut buffer: Vec<u32> = vec![0; window_width * window_height];
-
-    // Limit to ~60 FPS
-    window.set_target_fps(60);
 
     loop {
         for robot in mut_robots.iter_mut() {
@@ -307,16 +258,13 @@ fn part2(robots: &Vec<Robot>, tiles_wide: usize, tiles_tall: usize) -> usize {
         project_bots_onto_map(&mut_robots, &mut map);
 
         if find_straight_line_of_10(&map) {
-            // Render the map to PNG (optional)
-            let filename = format!("day_24_robots_at_{:07}.png", time);
-            if let Err(e) = render_map_to_png(&map, time, scale, false) {
+            // Render the map to BPM
+            let filename = format!("outputs/day_24_robots_at_{:07}.bmp", time);
+            if let Err(e) = render_map_to_bmp(&map, &filename, scale, false) {
                 eprintln!("Failed to render image at time {}: {}", time, e);
             } else {
-                println!("Rendered image: {}", filename);
+                println!("Rendered image: {}", &filename);
             }
-            // Update the window buffer
-            update_window_buffer(&map, &mut buffer, scale);
-            window.update_with_buffer(&buffer, window_width, window_height).unwrap();
             break;
         }
         time += 1;
