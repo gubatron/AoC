@@ -1,5 +1,27 @@
-use std::collections::HashSet;
+use linked_hash_set::LinkedHashSet;
+use std::collections::{HashSet, VecDeque};
 use std::io::Write;
+
+type Pos = (usize, usize);
+#[derive(Hash, Eq, PartialEq, Debug, Clone)]
+struct BigBox {
+    left: Pos,
+    right: Pos,
+}
+
+impl BigBox {
+    fn new(left: Pos, right: Pos) -> Self {
+        // Ensure that left is always to the left of right
+        if left.0 < right.0 {
+            BigBox { left, right }
+        } else {
+            BigBox {
+                left: right,
+                right: left,
+            }
+        }
+    }
+}
 
 fn load_board_directions(file_path: &str, enhanced: bool) -> (Vec<String>, String) {
     let input = aoc::utils::load_input_break_by_empty_lines_as_vec_str(file_path);
@@ -57,96 +79,238 @@ fn gps(x: usize, y: usize) -> usize {
     y * 100 + x
 }
 
-fn get_robot(board: &Vec<String>) -> (usize, usize) {
-    let mut robot = (0, 0);
+fn get_robot(board: &Vec<String>) -> Pos {
     for (y, row) in board.iter().enumerate() {
         if let Some(x) = row.find('@') {
-            robot = (x, y);
-            break;
+            return (x, y);
         }
     }
-    robot
+    (0, 0)
 }
 
-fn get_ahead(pos: (usize, usize), direction: char) -> (usize, usize) {
+/**
+* Returns the position ahead of the given position.
+* No logic about borders, or boxes, just the position ahead.
+*/
+fn get_ahead(pos: Pos, direction: char) -> Option<Pos> {
     match direction {
-        '^' => (pos.0, pos.1 - 1),
-        'v' => (pos.0, pos.1 + 1),
-        '<' => (pos.0 - 1, pos.1),
-        '>' => (pos.0 + 1, pos.1),
-        _ => pos,
+        '^' => {
+            if pos.1 == 0 {
+                None
+            } else {
+                Some((pos.0, pos.1 - 1))
+            }
+        }
+        'v' => Some((pos.0, pos.1 + 1)),
+        '<' => {
+            if pos.0 == 0 {
+                None
+            } else {
+                Some((pos.0 - 1, pos.1))
+            }
+        }
+        '>' => Some((pos.0 + 1, pos.1)),
+        _ => Some(pos),
     }
 }
 
-fn push_box(
-    direction: char,
-    box_pos: (usize, usize),
-    boxes: &mut HashSet<(usize, usize)>,
-    walls: &HashSet<(usize, usize)>,
-) -> (bool, HashSet<(usize, usize)>) {
-    let ahead = get_ahead(box_pos, direction);
-    if walls.contains(&ahead) || boxes.contains(&ahead) {
-        return (false, boxes.clone());
+fn get_big_boxes_ahead(big_box: &BigBox, direction: char, boxes: &HashSet<BigBox>) -> Vec<BigBox> {
+    let mut result = Vec::new();
+
+    // Coordinates for the current big box (always 2 wide, 1 row tall)
+    let (bx1, by1) = big_box.left; // e.g. '['
+    let (bx2, by2) = big_box.right; // e.g. ']'
+    // Normalize so min_x <= max_x
+    let (min_x, max_x) = (bx1.min(bx2), bx1.max(bx2));
+    // Since it's always one row tall, y1 == y2
+    let row = by1;
+
+    match direction {
+        // Moving down => check row + 1 for boxes that overlap horizontally
+        'v' => {
+            let target_row = row + 1;
+            for candidate in boxes.iter() {
+                let (cx1, cy1) = candidate.left;
+                let (cx2, cy2) = candidate.right;
+                // Only consider boxes in exactly `target_row`
+                if cy1 == target_row && cy2 == target_row {
+                    let (cmin_x, cmax_x) = (cx1.min(cx2), cx1.max(cx2));
+                    // Overlap if cmax_x >= min_x && cmin_x <= max_x
+                    if cmax_x >= min_x && cmin_x <= max_x {
+                        result.push(candidate.clone());
+                    }
+                }
+            }
+        }
+
+        // Moving up => check row - 1 for boxes that overlap horizontally
+        '^' => {
+            // If row == 0, obviously nothing can be above
+            if row == 0 {
+                return result;
+            }
+            let target_row = row - 1;
+            for candidate in boxes.iter() {
+                let (cx1, cy1) = candidate.left;
+                let (cx2, cy2) = candidate.right;
+                if cy1 == target_row && cy2 == target_row {
+                    let (cmin_x, cmax_x) = (cx1.min(cx2), cx1.max(cx2));
+                    if cmax_x >= min_x && cmin_x <= max_x {
+                        result.push(candidate.clone());
+                    }
+                }
+            }
+        }
+
+        // Moving right => check same row, columns just beyond our max_x
+        '>' => {
+            let target_col = max_x + 1;
+            for candidate in boxes.iter() {
+                let (cx1, cy1) = candidate.left;
+                let (cx2, cy2) = candidate.right;
+                if cy1 == row && cy2 == row {
+                    let (cmin_x, cmax_x) = (cx1.min(cx2), cx1.max(cx2));
+                    // If the candidate’s range touches the column `target_col`, we have a “box ahead.”
+                    // Overlap occurs if [cmin_x..cmax_x] includes `target_col`.
+                    if cmin_x <= target_col && cmax_x >= target_col {
+                        result.push(candidate.clone());
+                    }
+                }
+            }
+        }
+
+        // Moving left => check same row, columns just to the left of our min_x
+        '<' => {
+            // If min_x == 0, we can’t go left anyway
+            if min_x == 0 {
+                return result;
+            }
+            let target_col = min_x - 1;
+            for candidate in boxes.iter() {
+                let (cx1, cy1) = candidate.left;
+                let (cx2, cy2) = candidate.right;
+                if cy1 == row && cy2 == row {
+                    let (cmin_x, cmax_x) = (cx1.min(cx2), cx1.max(cx2));
+                    // Check overlap if [cmin_x..cmax_x] includes target_col
+                    if cmin_x <= target_col && cmax_x >= target_col {
+                        result.push(candidate.clone());
+                    }
+                }
+            }
+        }
+
+        _ => {
+            // No other valid directions in this puzzle
+        }
     }
+
+    result
+}
+
+fn push_box(direction: char, box_pos: Pos, boxes: &mut HashSet<Pos>, walls: &HashSet<Pos>) -> bool {
+    // Attempt to get the position ahead; handle cases where it's out of bounds
+    let ahead_opt = get_ahead(box_pos, direction);
+
+    // If moving ahead is out of bounds, the push is invalid
+    let ahead = match ahead_opt {
+        Some(pos) => pos,
+        None => return false,
+    };
+
+    // Check if the position ahead is blocked by a wall or another box
+    if walls.contains(&ahead) || boxes.contains(&ahead) {
+        return false;
+    }
+
+    // Perform the push: remove the current box position and insert the new position
     boxes.remove(&box_pos);
     boxes.insert(ahead);
-    (true, boxes.clone())
+
+    println!(
+        "Pushed box from {:?} to {:?} in direction '{}'",
+        box_pos, ahead, direction
+    );
+
+    true
 }
 
-fn find_consecutive_boxes(
-    direction: char,
-    first_box_pos: (usize, usize),
-    boxes: &HashSet<(usize, usize)>,
-) -> Vec<(usize, usize)> {
+fn find_consecutive_boxes(direction: char, first_box_pos: Pos, boxes: &HashSet<Pos>) -> Vec<Pos> {
     let mut consecutive_boxes = vec![first_box_pos];
-    let mut ahead = get_ahead(first_box_pos, direction);
-    while boxes.contains(&ahead) {
-        consecutive_boxes.push(ahead);
-        ahead = get_ahead(ahead, direction);
+    let mut current_pos = first_box_pos;
+
+    loop {
+        // Attempt to get the position ahead; handle out-of-bounds moves
+        let ahead_opt = get_ahead(current_pos, direction);
+
+        // If moving ahead is out of bounds, stop searching
+        let ahead = match ahead_opt {
+            Some(pos) => pos,
+            None => break,
+        };
+
+        // If the position ahead contains a box, add it to the list
+        if boxes.contains(&ahead) {
+            consecutive_boxes.push(ahead);
+            current_pos = ahead; // Move to the next box in the sequence
+        } else {
+            break; // No more consecutive boxes in this direction
+        }
     }
+
     consecutive_boxes
 }
 
 fn push_boxes(
     direction: char,
-    first_box_pos: (usize, usize),
-    boxes: &mut HashSet<(usize, usize)>,
-    walls: &HashSet<(usize, usize)>,
-) -> (bool, HashSet<(usize, usize)>) {
+    first_box_pos: Pos,
+    boxes: &mut HashSet<Pos>,
+    walls: &HashSet<Pos>,
+) -> bool {
     let mut moved = false;
-    let mut consecutive_boxes = find_consecutive_boxes(direction, first_box_pos, boxes);
-    // we start from the last box
-    while let Some(box_pos) = consecutive_boxes.pop() {
-        let (box_moved, new_boxes) = push_box(direction, box_pos, boxes, walls);
+    let mut boxes_to_push = find_consecutive_boxes(direction, first_box_pos, boxes);
+
+    while let Some(box_pos) = boxes_to_push.pop() {
+        let box_moved = push_box(direction, box_pos, boxes, walls);
         moved = moved || box_moved;
-        *boxes = new_boxes;
-        //(moved, *boxes) = push_box(direction, box_pos, boxes, walls);
     }
-    (moved, boxes.clone())
+
+    moved
 }
 
-fn move_robot(
-    direction: char,
-    robot: (usize, usize),
-    boxes: &mut HashSet<(usize, usize)>,
-    walls: &HashSet<(usize, usize)>,
-) -> ((usize, usize), HashSet<(usize, usize)>) {
-    let ahead = get_ahead(robot, direction);
-    if walls.contains(&ahead) {
-        return (robot, boxes.clone());
-    }
-    if boxes.contains(&ahead) {
-        let (moved, moved_boxes) = push_boxes(direction, ahead, boxes, walls);
-        if moved {
-            return (ahead, moved_boxes);
+fn move_robot(direction: char, robot: Pos, boxes: &mut HashSet<Pos>, walls: &HashSet<Pos>) -> Pos {
+    // Attempt to get the position ahead; handle out-of-bounds
+    let ahead_opt = get_ahead(robot, direction);
+
+    // Match on the Option<Pos> to handle None (out-of-bounds) safely
+    let ahead = match ahead_opt {
+        Some(pos) => pos,
+        None => {
+            // Cannot move out of bounds; stay in place
+            return robot;
         }
-        return (robot, boxes.clone());
+    };
+
+    // If there's a wall in the position ahead, do not move
+    if walls.contains(&ahead) {
+        return robot;
     }
 
-    (ahead, boxes.clone())
+    // If there's a box in the position ahead, attempt to push it
+    if boxes.contains(&ahead) {
+        let moved = push_boxes(direction, ahead, boxes, walls);
+        if moved {
+            // Successfully pushed the box; update robot's position
+            return ahead;
+        }
+        // Box could not be moved; robot stays in place
+        return robot;
+    }
+
+    // No obstacles; move the robot to the position ahead
+    ahead
 }
 
-fn print_board(robot:(usize, usize), boxes: HashSet<(usize, usize)>, walls: HashSet<(usize,usize)>, delay: f32) {
+fn print_board(robot: Pos, boxes: &HashSet<Pos>, walls: HashSet<Pos>, delay: f32) {
     // get the width and height of the board by looking at the max x and y values of the walls
     let width = walls.iter().map(|(x, _)| x).max().unwrap() + 1;
     let height = walls.iter().map(|(_, y)| y).max().unwrap() + 1;
@@ -176,15 +340,15 @@ fn move_console_cursor_up_by(times: usize) {
     std::io::stdout().flush().unwrap();
 }
 
-fn part1(board: &Vec<String>, directions: &str, print_delay:f32) -> usize {
+fn part1(board: &Vec<String>, directions: &str, print_delay: f32) -> usize {
     let mut robot = get_robot(board);
     let mut boxes = get_boxes(board);
     let walls = get_walls(board);
 
     for direction in directions.chars() {
-        let (new_robot, new_boxes) = move_robot(direction, robot, &mut boxes, &walls);
+        let new_robot = move_robot(direction, robot, &mut boxes, &walls);
         robot = new_robot;
-        print_board(robot, new_boxes, walls.clone(), print_delay);
+        print_board(robot, &boxes, walls.clone(), print_delay);
     }
     // move the cursor down by the height of the board
     for _ in 0..walls.iter().map(|(_, y)| y).max().unwrap() + 1 {
@@ -195,7 +359,416 @@ fn part1(board: &Vec<String>, directions: &str, print_delay:f32) -> usize {
     boxes.iter().map(|(x, y)| gps(*x, *y)).sum()
 }
 
+fn print_big_board(
+    robot: Pos,
+    boxes: HashSet<BigBox>,
+    walls: HashSet<Pos>,
+    delay: f32,
+    move_cursor_up: bool,
+) {
+    // get the width and height of the board by looking at the max x and y values of the walls
+    let width = walls.iter().map(|(x, _)| x).max().unwrap() + 1;
+    let height = walls.iter().map(|(_, y)| y).max().unwrap() + 1;
+    let mut board = vec![vec!['.'; width]; height];
+    board[robot.1][robot.0] = '@';
+
+    for bb in boxes.iter() {
+        let ((x1, y1), (x2, y2)) = (bb.left, bb.right);
+        board[y1][x1] = '[';
+        board[y2][x2] = ']';
+    }
+
+    for (x, y) in walls.iter() {
+        board[*y][*x] = '#';
+    }
+    for row in board.iter() {
+        println!("{}", row.iter().collect::<String>());
+    }
+    if move_cursor_up {
+        move_console_cursor_up_by(height);
+    }
+    if delay > 0.0 {
+        std::thread::sleep(std::time::Duration::from_secs_f32(delay));
+    }
+}
+
+fn get_big_boxes(board: &Vec<String>) -> HashSet<BigBox> {
+    let left_halves = get_items(&board, '[');
+    left_halves
+        .iter()
+        .map(|(x, y)| {
+            let right_half = (*x + 1, *y);
+            BigBox::new((*x, *y), right_half)
+        })
+        .collect()
+}
+
+// BFS
+fn find_consecutive_big_boxes(
+    direction: char,
+    first_big_box: BigBox,
+    boxes: &HashSet<BigBox>,
+) -> LinkedHashSet<BigBox> {
+    let mut consecutive_boxes = LinkedHashSet::new();
+    let mut visited = HashSet::new();
+    let mut queue = VecDeque::new();
+
+    queue.push_back(first_big_box.clone());
+    visited.insert(first_big_box.clone());
+
+    println!(
+        "Starting BFS to find consecutive boxes in direction '{}'",
+        direction
+    );
+
+    while let Some(current_box) = queue.pop_front() {
+        println!("Visiting big box: {:?}", current_box);
+        consecutive_boxes.insert(current_box.clone());
+
+        let boxes_ahead = get_big_boxes_ahead(&current_box, direction, boxes);
+
+        for box_ahead in boxes_ahead {
+            if !visited.contains(&box_ahead) {
+                println!("Found big box ahead: {:?}", box_ahead);
+                visited.insert(box_ahead.clone());
+                queue.push_back(box_ahead.clone());
+            }
+        }
+    }
+
+    println!("Consecutive big boxes found: {:?}", consecutive_boxes);
+    consecutive_boxes
+}
+
+fn push_big_box(
+    direction: char,
+    big_box: BigBox,
+    boxes: &mut HashSet<BigBox>,
+    walls: &HashSet<Pos>,
+) -> (bool, HashSet<BigBox>) {
+    match direction {
+        '<' => {
+            // Attempt to move the box left
+            let ahead = match get_ahead(big_box.left, direction) {
+                Some(pos) => pos,
+                None => return (false, boxes.clone()), // Move invalid if out of bounds
+            };
+
+            // Prevent moving left beyond the grid
+            if ahead.0 >= big_box.left.0 {
+                return (false, boxes.clone());
+            }
+
+            // Check for walls at the new position
+            if walls.contains(&ahead) {
+                return (false, boxes.clone());
+            }
+
+            // Define the new big box positions
+            let new_big_box = BigBox::new(ahead, (ahead.0 + 1, ahead.1));
+
+            // Check if the new position is occupied by another big box
+            if boxes.contains(&new_big_box) {
+                return (false, boxes.clone());
+            }
+
+            // Move the box
+            boxes.remove(&big_box);
+            boxes.insert(new_big_box.clone());
+            println!(
+                "Moved big box from {:?} to {:?} in direction '<'",
+                big_box, new_big_box
+            );
+            (true, boxes.clone())
+        }
+        '>' => {
+            // Attempt to move the box right
+            let ahead = match get_ahead(big_box.right, direction) {
+                Some(pos) => pos,
+                None => return (false, boxes.clone()), // Move invalid if out of bounds
+            };
+
+            // Check for walls at the new position
+            if walls.contains(&ahead) {
+                return (false, boxes.clone());
+            }
+
+            // Define the new big box positions
+            let new_big_box = BigBox::new((ahead.0 - 1, ahead.1), ahead);
+
+            // Check if the new position is occupied by another big box
+            if boxes.contains(&new_big_box) {
+                return (false, boxes.clone());
+            }
+
+            // Move the box
+            boxes.remove(&big_box);
+            boxes.insert(new_big_box.clone());
+            println!(
+                "Moved big box from {:?} to {:?} in direction '>'",
+                big_box, new_big_box
+            );
+            (true, boxes.clone())
+        }
+        '^' | 'v' => {
+            // Attempt to move the box vertically
+            let dy = if direction == '^' { -1 } else { 1 };
+
+            // Safely calculate new y-coordinates for both halves
+            let new_left_half = match get_ahead(big_box.left, direction) {
+                Some(pos) => pos,
+                None => return (false, boxes.clone()), // Move invalid if out of bounds
+            };
+            let new_right_half = (new_left_half.0 + 1, new_left_half.1);
+
+            let new_big_box = BigBox::new(new_left_half, new_right_half);
+
+            // Check for walls at the new positions
+            if walls.contains(&new_left_half) || walls.contains(&new_right_half) {
+                return (false, boxes.clone());
+            }
+
+            // Check if the new position is occupied by another big box
+            if boxes.contains(&new_big_box) {
+                return (false, boxes.clone());
+            }
+
+            // Move the box
+            boxes.remove(&big_box);
+            boxes.insert(new_big_box.clone());
+            println!(
+                "Moved big box from {:?} to {:?} in direction '{}'",
+                big_box, new_big_box, direction
+            );
+            (true, boxes.clone())
+        }
+        _ => {
+            // Invalid direction
+            (false, boxes.clone())
+        }
+    }
+}
+
+fn wall_ahead_of_big_box(direction: char, big_box: BigBox, walls: &HashSet<Pos>) -> bool {
+    if direction == '<' {
+        let ahead = match get_ahead(big_box.left, direction) {
+            Some(pos) => pos,
+            None => return true, // Treat out-of-bounds as wall
+        };
+        return walls.contains(&ahead);
+    }
+
+    if direction == '>' {
+        let ahead = match get_ahead(big_box.right, direction) {
+            Some(pos) => pos,
+            None => return true, // Treat out-of-bounds as wall
+        };
+        return walls.contains(&ahead);
+    }
+
+    if direction == '^' || direction == 'v' {
+        let ahead_of_left_half = match get_ahead(big_box.left, direction) {
+            Some(pos) => pos,
+            None => return true, // Treat out-of-bounds as wall
+        };
+        let ahead_of_right_half = match get_ahead(big_box.right, direction) {
+            Some(pos) => pos,
+            None => return true, // Treat out-of-bounds as wall
+        };
+        return walls.contains(&ahead_of_left_half) || walls.contains(&ahead_of_right_half);
+    }
+    false
+}
+
+fn all_consecutive_big_boxes_clear_to_move(
+    direction: char,
+    consecutive_big_boxes: LinkedHashSet<BigBox>,
+    walls: &HashSet<Pos>,
+) -> bool {
+    consecutive_big_boxes
+        .iter()
+        .all(|big_box| !wall_ahead_of_big_box(direction, big_box.clone(), walls))
+}
+
+fn push_big_boxes(
+    direction: char,
+    first_big_box: BigBox,
+    boxes: &mut HashSet<BigBox>,
+    walls: &HashSet<Pos>,
+) -> (bool, HashSet<BigBox>) {
+    let mut moved = false;
+    let consecutive_boxes = find_consecutive_big_boxes(direction, first_big_box, boxes);
+
+    // Check if all consecutive big boxes can be moved
+    if !all_consecutive_big_boxes_clear_to_move(direction, consecutive_boxes.clone(), walls) {
+        println!("Cannot push all boxes in direction '{}'", direction);
+        return (false, boxes.clone());
+    }
+
+    // Convert LinkedHashSet to Vec for ordered processing
+    let mut boxes_to_push: Vec<BigBox> = consecutive_boxes.into_iter().collect();
+
+    // Sort boxes based on direction to push from farthest to nearest
+    boxes_to_push.sort_by(|a, b| {
+        match direction {
+            '<' => b.left.0.cmp(&a.left.0), // Push leftmost first
+            '>' => a.left.0.cmp(&b.left.0), // Push rightmost first
+            '^' => b.left.1.cmp(&a.left.1), // Push topmost first
+            'v' => b.left.1.cmp(&a.left.1), // Push farthest down first
+            _ => std::cmp::Ordering::Equal,
+        }
+    });
+
+    // Debug: Print sorted boxes to push
+    println!(
+        "Boxes to push in direction '{}': {:?}",
+        direction, boxes_to_push
+    );
+
+    for box_pos in boxes_to_push {
+        let (box_moved, new_boxes) = push_big_box(direction, box_pos, boxes, walls);
+        moved = moved || box_moved;
+        *boxes = new_boxes;
+    }
+
+    (moved, boxes.clone())
+}
+
+fn move_robot_bb(
+    direction: char,
+    robot: (usize, usize),
+    boxes: &mut HashSet<BigBox>,
+    walls: &HashSet<(usize, usize)>,
+) -> ((usize, usize), HashSet<BigBox>) {
+    let ahead = match get_ahead(robot, direction) {
+        Some(pos) => pos,
+        None => return (robot, boxes.clone()), // Move invalid if out of bounds
+    };
+
+    if walls.contains(&ahead) {
+        return (robot, boxes.clone());
+    }
+
+    let mut first_box: Option<BigBox> = None;
+
+    // Identify the big box ahead based on direction
+    if direction == '^' || direction == 'v' {
+        // Define potential big box positions ahead
+        let potential_boxes = match direction {
+            '^' => vec![
+                BigBox::new((robot.0 - 1, robot.1 - 1), (robot.0, robot.1 - 1)),
+                BigBox::new((robot.0, robot.1 - 1), (robot.0 + 1, robot.1 - 1)),
+            ],
+            'v' => vec![
+                BigBox::new((robot.0 - 1, robot.1 + 1), (robot.0, robot.1 + 1)),
+                BigBox::new((robot.0, robot.1 + 1), (robot.0 + 1, robot.1 + 1)),
+            ],
+            _ => vec![],
+        };
+
+        // Find the first big box ahead
+        for potential_box in potential_boxes {
+            if boxes.contains(&potential_box) {
+                first_box = Some(potential_box);
+                break;
+            }
+        }
+
+        // If no big box is ahead, move the robot
+        if first_box.is_none() {
+            return (ahead, boxes.clone());
+        }
+    }
+
+    if direction == '<' {
+        let ahead_right = match get_ahead(robot, direction) {
+            Some(pos) => pos,
+            None => return (robot, boxes.clone()), // Move invalid if out of bounds
+        };
+        let ahead_left = (ahead_right.0 - 1, ahead_right.1);
+        first_box = Some(BigBox::new(ahead_left, ahead_right));
+    } else if direction == '>' {
+        let ahead_left = match get_ahead(robot, direction) {
+            Some(pos) => pos,
+            None => return (robot, boxes.clone()), // Move invalid if out of bounds
+        };
+        let ahead_right = (ahead_left.0 + 1, ahead_left.1);
+        first_box = Some(BigBox::new(ahead_left, ahead_right));
+    }
+
+    if let Some(box_to_push) = first_box {
+        if boxes.contains(&box_to_push) {
+            let (moved, moved_boxes) = push_big_boxes(direction, box_to_push, boxes, walls);
+            if moved {
+                return (ahead, moved_boxes);
+            }
+            return (robot, boxes.clone());
+        }
+    }
+
+    (ahead, boxes.clone())
+}
+
+fn part2(board: &Vec<String>, directions: &String, print_delay: f32) -> usize {
+    let mut robot = get_robot(board);
+    let walls = get_walls(board);
+    let mut boxes = get_big_boxes(board);
+    let debug = true;
+
+    if debug {
+        print_big_board(robot, boxes.clone(), walls.clone(), print_delay, false);
+    }
+
+    for direction in directions.chars() {
+        let (new_robot, new_boxes) = move_robot_bb(direction, robot, &mut boxes, &walls);
+        robot = new_robot;
+        if debug {
+            println!("Move {:?}", direction);
+            print_big_board(robot, new_boxes, walls.clone(), print_delay, false);
+            println!();
+        } else {
+            print_big_board(robot, new_boxes, walls.clone(), print_delay, true);
+        }
+    }
+    // move the cursor down by the height of the board
+    if debug {
+        for _ in 0..walls.iter().map(|(_, y)| y).max().unwrap() + 1 {
+            println!();
+        }
+    }
+
+    // sum the gps of all the boxes
+    boxes
+        .iter()
+        .map(|big_box| gps(big_box.left.0, big_box.left.1))
+        .sum()
+}
+
 fn main() {
-    let (board, directions) = load_board_directions("inputs/15.txt", false);
-    println!("Part 1: {:?}", part1(&board, &directions, 0.0)); //1514333
+    // let (board, directions) = load_board_directions("inputs/15.txt", false);
+    // println!("Part 1: {:?}", part1(&board, &directions, 0f32)); //1514333
+
+    // let (board, directions) = load_board_directions("inputs/15.up.test.txt", false);
+    // println!("Part 2: {:?}", part2(&board, &directions, 0.20f32)); //
+
+    // let (board, directions) = load_board_directions("inputs/15.2.test.txt", true);
+    // println!("Part 2: {:?}", part2(&board, &directions, 0.20f32)); //
+
+}
+
+mod test {
+    use crate::{get_big_boxes, gps, load_board_directions};
+
+    #[test]
+    pub fn test_gps_score_on_enhanced_board() {
+        let (board, directions) = load_board_directions("inputs/15.2.gps.test.txt", false);
+        let mut boxes = get_big_boxes(&board);
+        let gps_score : usize = boxes
+            .iter()
+            .map(|big_box| gps(big_box.left.0, big_box.left.1))
+            .sum();
+        assert_eq!(gps_score, 9021);
+        println!("GPS score: {:?}", gps_score);
+
+    }
 }
