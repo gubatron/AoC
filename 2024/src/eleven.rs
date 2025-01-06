@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use aoc::utils::load_input_as_string;
+use std::collections::HashMap;
 
 fn transform(numbers: &Vec<u64>) -> Vec<u64> {
     let mut result = Vec::new();

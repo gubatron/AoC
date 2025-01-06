@@ -1,4 +1,5 @@
 use linked_hash_set::LinkedHashSet;
+use log::{debug, log_enabled};
 use std::collections::{HashSet, VecDeque};
 use std::io::Write;
 
@@ -209,7 +210,7 @@ fn push_box(direction: char, box_pos: Pos, boxes: &mut HashSet<Pos>, walls: &Has
     boxes.remove(&box_pos);
     boxes.insert(ahead);
 
-    println!(
+    debug!(
         "Pushed box from {:?} to {:?} in direction '{}'",
         box_pos, ahead, direction
     );
@@ -399,50 +400,40 @@ fn find_consecutive_big_boxes(
     queue.push_back(first_big_box.clone());
     visited.insert(first_big_box.clone());
 
-    println!(
+    debug!(
         "find_consecutive_boxes: Starting BFS to find consecutive boxes in direction '{}'",
         direction
     );
 
     while let Some(current_box) = queue.pop_front() {
-        println!(
+        debug!(
             "find_consecutive_boxes: Visiting big box: {:?}",
             current_box
         );
+
         consecutive_boxes.insert(current_box.clone());
 
         let boxes_ahead = get_big_boxes_ahead(&current_box, direction, boxes);
 
         for box_ahead in boxes_ahead {
             if !visited.contains(&box_ahead) {
-                println!(
+                debug!(
                     "find_consecutive_boxes: Found big box ahead: {:?}",
                     box_ahead
                 );
+
                 visited.insert(box_ahead.clone());
                 queue.push_back(box_ahead.clone());
             }
         }
     }
 
-    println!(
+    debug!(
         "find_consecutive_boxes: Consecutive big boxes found: {:?}",
         consecutive_boxes
     );
-    consecutive_boxes
-}
 
-fn is_overlapping(new_big_box: &BigBox, boxes: &HashSet<BigBox>) -> bool {
-    for existing_box in boxes {
-        if existing_box.left == new_big_box.left
-            || existing_box.right == new_big_box.left
-            || existing_box.left == new_big_box.right
-            || existing_box.right == new_big_box.right
-        {
-            return true;
-        }
-    }
-    false
+    consecutive_boxes
 }
 
 fn push_big_box(
@@ -479,10 +470,11 @@ fn push_big_box(
             // Move the box
             boxes.remove(&big_box);
             boxes.insert(new_big_box.clone());
-            println!(
+            debug!(
                 "Moved big box from {:?} to {:?} in direction '<'",
                 big_box, new_big_box
             );
+
             (true, boxes.clone())
         }
         '>' => {
@@ -507,7 +499,8 @@ fn push_big_box(
             // Move the box
             boxes.remove(&big_box);
             boxes.insert(new_big_box.clone());
-            println!(
+
+            debug!(
                 "Moved big box from {:?} to {:?} in direction '>'",
                 big_box, new_big_box
             );
@@ -535,7 +528,7 @@ fn push_big_box(
             // Move the box
             boxes.remove(&big_box);
             boxes.insert(new_big_box_above.clone());
-            println!(
+            debug!(
                 "Moved big box from {:?} to {:?} in direction '{}'",
                 big_box, new_big_box_above, direction
             );
@@ -600,7 +593,7 @@ fn push_big_boxes(
 
     // Check if all consecutive big boxes can be moved
     if !all_consecutive_big_boxes_clear_to_move(direction, consecutive_boxes.clone(), walls) {
-        println!("Cannot push all boxes in direction '{}'", direction);
+        debug!("Cannot push all boxes in direction '{}'", direction);
         return (false, boxes.clone());
     }
 
@@ -619,7 +612,7 @@ fn push_big_boxes(
     });
 
     // Debug: Print sorted boxes to push
-    println!(
+    debug!(
         "Boxes to push in direction '{}': {:?}",
         direction, boxes_to_push
     );
@@ -713,17 +706,16 @@ fn part2(board: &Vec<String>, directions: &String, print_delay: f32) -> usize {
     let mut robot = get_robot(board);
     let walls = get_walls(board);
     let mut boxes = get_big_boxes(board);
-    let debug = true;
 
-    if debug {
+    if log_enabled!(log::Level::Info) {
         print_big_board(robot, boxes.clone(), walls.clone(), print_delay, false);
     }
 
     for direction in directions.chars() {
         let (new_robot, new_boxes) = move_robot_bb(direction, robot, &mut boxes, &walls);
         robot = new_robot;
-        if debug {
-            println!("Move {:?}", direction);
+        if log_enabled!(log::Level::Info) {
+            debug!("Move {:?}", direction);
             print_big_board(robot, new_boxes, walls.clone(), print_delay, false);
             println!();
         } else {
@@ -731,7 +723,7 @@ fn part2(board: &Vec<String>, directions: &String, print_delay: f32) -> usize {
         }
     }
     // move the cursor down by the height of the board
-    if debug {
+    if log_enabled!(log::Level::Info) {
         for _ in 0..walls.iter().map(|(_, y)| y).max().unwrap() + 1 {
             println!();
         }
@@ -744,31 +736,15 @@ fn part2(board: &Vec<String>, directions: &String, print_delay: f32) -> usize {
         .sum()
 }
 
-pub fn test_large_example_part_two() {
-    let board = vec![
-        "####################".to_string(),
-        "##....[]....[]..[]##".to_string(),
-        "##............[]..##".to_string(),
-        "##..[][]....[]..[]##".to_string(),
-        "##....[]@.....[]..##".to_string(),
-        "##[]##....[]......##".to_string(),
-        "##[]....[]....[]..##".to_string(),
-        "##..[][]..[]..[][]##".to_string(),
-        "##........[]......##".to_string(),
-        "####################".to_string(),
-    ];
-
-    let directions = "<^^>>>vv<v>>v<<".to_string();
-    //10092
-    println!("Part 2 (big board test):");
-    let r = part2(&board, &directions, 0.0);
-    println!("Part 2 result {:?}:", r);
-    assert_eq!(r, 10092)
-}
-
 fn main() {
-    // let (board, directions) = load_board_directions("inputs/15.txt", false);
-    // println!("Part 1: {:?}", part1(&board, &directions, 0f32)); //1514333
+    env_logger::init();
+    let (board, directions) = load_board_directions("inputs/15.txt", false);
+    println!("Part 1: {:?}", part1(&board, &directions, 0f32)); //1514333
+
+    let (board, directions) = load_board_directions("inputs/15.txt", true);
+    println!("Part 2: {:?}", part2(&board, &directions, 0.0f32)); // 1528453
+
+    // tests
 
     // let (board, directions) = load_board_directions("inputs/15.side.test.txt", false);
     // println!("Part 2: {:?}", part2(&board, &directions, 0.205f32)); //
@@ -779,24 +755,8 @@ fn main() {
     // let (board, directions) = load_board_directions("inputs/15.down.test.txt", false);
     // println!("Part 2: {:?}", part2(&board, &directions, 0.50f32)); //
 
-    let (board, directions) = load_board_directions("inputs/15.2.test.txt", true);
-    println!("Part 2: {:?}", part2(&board, &directions, 0.02f32)); //
+    // let (board, directions) = load_board_directions("inputs/15.2.test.txt", true);
+    // println!("Part 2: {:?}", part2(&board, &directions, 0.02f32)); //
 
     //crate::test::test_large_example_part_two();
-}
-
-pub mod test {
-    use crate::{get_big_boxes, gps, load_board_directions};
-
-    #[test]
-    pub fn test_gps_score_on_enhanced_board() {
-        let (board, directions) = load_board_directions("inputs/15.2.gps.test.txt", false);
-        let mut boxes = get_big_boxes(&board);
-        let gps_score: usize = boxes
-            .iter()
-            .map(|big_box| gps(big_box.left.0, big_box.left.1))
-            .sum();
-        assert_eq!(gps_score, 9021);
-        println!("GPS score: {:?}", gps_score);
-    }
 }

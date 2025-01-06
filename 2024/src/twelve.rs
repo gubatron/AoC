@@ -88,7 +88,9 @@ fn calculate_perimeter(area: &[Coord], grid: &[Vec<char>]) -> usize {
 
 fn calculate_sides(area: &[Coord]) -> usize {
     let cell_set: HashSet<_> = area.iter().cloned().collect();
-    area.iter().map(|&c| get_corners_for_coord(c, &cell_set)).sum()
+    area.iter()
+        .map(|&c| get_corners_for_coord(c, &cell_set))
+        .sum()
 }
 
 fn get_corners_for_coord(coord: Coord, cell_set: &HashSet<Coord>) -> usize {
@@ -105,41 +107,60 @@ fn get_corners_for_coord(coord: Coord, cell_set: &HashSet<Coord>) -> usize {
         if r < 0 || c < 0 {
             return false;
         }
-        cell_set.contains(&Coord { x: r as i32, y: c as i32 })
+        cell_set.contains(&Coord {
+            x: r as i32,
+            y: c as i32,
+        })
     };
 
     let mut count = 0;
 
     // 1) Four orthogonal corners
     // If top & right are out => corner
-    if !in_area(top) && !in_area(right) { count += 1; }
+    if !in_area(top) && !in_area(right) {
+        count += 1;
+    }
     // right & down
-    if !in_area(right) && !in_area(down) { count += 1; }
+    if !in_area(right) && !in_area(down) {
+        count += 1;
+    }
     // down & left
-    if !in_area(down) && !in_area(left) { count += 1; }
+    if !in_area(down) && !in_area(left) {
+        count += 1;
+    }
     // left & top
-    if !in_area(left) && !in_area(top) { count += 1; }
+    if !in_area(left) && !in_area(top) {
+        count += 1;
+    }
 
     // 2) Four diagonal corners
     // top & right in area, but diagonal top-right out
     if in_area(top) && in_area(right) {
         let top_right = (top.0, right.1);
-        if !in_area(top_right) { count += 1; }
+        if !in_area(top_right) {
+            count += 1;
+        }
     }
     // right & down
     if in_area(right) && in_area(down) {
         let right_down = (down.0, right.1);
-        if !in_area(right_down) { count += 1; }
+        if !in_area(right_down) {
+            count += 1;
+        }
     }
     // down & left
     if in_area(down) && in_area(left) {
         let down_left = (down.0, left.1);
-        if !in_area(down_left) { count += 1; }
+        if !in_area(down_left) {
+            count += 1;
+        }
     }
     // left & top
     if in_area(left) && in_area(top) {
         let left_top = (top.0, left.1);
-        if !in_area(left_top) { count += 1; }
+        if !in_area(left_top) {
+            count += 1;
+        }
     }
 
     count

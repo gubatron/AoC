@@ -286,7 +286,11 @@ fn solve_for_n_and_m_inverse(matrix: [[u64; 2]; 2], vector: [u64; 2]) -> Option<
     let m = (inv_ya * prize_x + inv_yb * prize_y) / determinant;
 
     // Check if n and m are valid (non-negative and integer)
-    if n < 0 || m < 0 || (inv_xa * prize_x + inv_xb * prize_y) % determinant != 0 || (inv_ya * prize_x + inv_yb * prize_y) % determinant != 0 {
+    if n < 0
+        || m < 0
+        || (inv_xa * prize_x + inv_xb * prize_y) % determinant != 0
+        || (inv_ya * prize_x + inv_yb * prize_y) % determinant != 0
+    {
         return None;
     }
 
