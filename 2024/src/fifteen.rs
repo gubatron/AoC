@@ -117,90 +117,73 @@ fn get_ahead(pos: Pos, direction: char) -> Option<Pos> {
 fn get_big_boxes_ahead(big_box: &BigBox, direction: char, boxes: &HashSet<BigBox>) -> Vec<BigBox> {
     let mut result = Vec::new();
 
-    // Coordinates for the current big box (always 2 wide, 1 row tall)
-    let (bx1, by1) = big_box.left; // e.g. '['
-    let (bx2, by2) = big_box.right; // e.g. ']'
-    // Normalize so min_x <= max_x
-    let (min_x, max_x) = (bx1.min(bx2), bx1.max(bx2));
-    // Since it's always one row tall, y1 == y2
-    let row = by1;
+    // Coordinates for the current big box
+    let (left_x, left_y) = big_box.left;
+    let (right_x, right_y) = big_box.right;
 
     match direction {
-        // Moving down => check row + 1 for boxes that overlap horizontally
-        'v' => {
-            let target_row = row + 1;
-            for candidate in boxes.iter() {
-                let (cx1, cy1) = candidate.left;
-                let (cx2, cy2) = candidate.right;
-                // Only consider boxes in exactly `target_row`
-                if cy1 == target_row && cy2 == target_row {
-                    let (cmin_x, cmax_x) = (cx1.min(cx2), cx1.max(cx2));
-                    // Overlap if cmax_x >= min_x && cmin_x <= max_x
-                    if cmax_x >= min_x && cmin_x <= max_x {
-                        result.push(candidate.clone());
-                    }
-                }
-            }
-        }
-
-        // Moving up => check row - 1 for boxes that overlap horizontally
-        '^' => {
-            // If row == 0, obviously nothing can be above
-            if row == 0 {
-                return result;
-            }
-            let target_row = row - 1;
-            for candidate in boxes.iter() {
-                let (cx1, cy1) = candidate.left;
-                let (cx2, cy2) = candidate.right;
-                if cy1 == target_row && cy2 == target_row {
-                    let (cmin_x, cmax_x) = (cx1.min(cx2), cx1.max(cx2));
-                    if cmax_x >= min_x && cmin_x <= max_x {
-                        result.push(candidate.clone());
-                    }
-                }
-            }
-        }
-
-        // Moving right => check same row, columns just beyond our max_x
-        '>' => {
-            let target_col = max_x + 1;
-            for candidate in boxes.iter() {
-                let (cx1, cy1) = candidate.left;
-                let (cx2, cy2) = candidate.right;
-                if cy1 == row && cy2 == row {
-                    let (cmin_x, cmax_x) = (cx1.min(cx2), cx1.max(cx2));
-                    // If the candidate’s range touches the column `target_col`, we have a “box ahead.”
-                    // Overlap occurs if [cmin_x..cmax_x] includes `target_col`.
-                    if cmin_x <= target_col && cmax_x >= target_col {
-                        result.push(candidate.clone());
-                    }
-                }
-            }
-        }
-
-        // Moving left => check same row, columns just to the left of our min_x
         '<' => {
-            // If min_x == 0, we can’t go left anyway
-            if min_x == 0 {
-                return result;
-            }
-            let target_col = min_x - 1;
-            for candidate in boxes.iter() {
-                let (cx1, cy1) = candidate.left;
-                let (cx2, cy2) = candidate.right;
-                if cy1 == row && cy2 == row {
-                    let (cmin_x, cmax_x) = (cx1.min(cx2), cx1.max(cx2));
-                    // Check overlap if [cmin_x..cmax_x] includes target_col
-                    if cmin_x <= target_col && cmax_x >= target_col {
-                        result.push(candidate.clone());
-                    }
+            // if left_x == 0 {
+            //     // Cannot move left if already at the leftmost position
+            //     return result;
+            // }
+            let target_pos = (left_x - 1, left_y);
+            // Check if any big box has its right part at target_pos
+            for box_candidate in boxes {
+                if box_candidate.right == target_pos {
+                    result.push(box_candidate.clone());
                 }
             }
         }
-
+        '>' => {
+            let target_pos = (right_x + 1, right_y);
+            // Check if any big box has its left part at target_pos
+            for box_candidate in boxes {
+                if box_candidate.left == target_pos {
+                    result.push(box_candidate.clone());
+                }
+            }
+        }
+        '^' => {
+            if left_y == 0 {
+                // Cannot move up if already at the top
+                return result;
+            }
+            // Positions to check: directly above left and directly above right
+            let possible_big_box_above = BigBox::new((left_x, left_y - 1), (right_x, right_y - 1));
+            let possible_big_box_left_diagonal =
+                BigBox::new((left_x - 1, left_y - 1), (right_x - 1, right_y - 1));
+            let possible_big_box_right_diagonal =
+                BigBox::new((left_x + 1, left_y - 1), (right_x + 1, right_y - 1));
+            if boxes.contains(&possible_big_box_above) {
+                result.push(possible_big_box_above);
+            }
+            if boxes.contains(&possible_big_box_left_diagonal) {
+                result.push(possible_big_box_left_diagonal);
+            }
+            if boxes.contains(&possible_big_box_right_diagonal) {
+                result.push(possible_big_box_right_diagonal);
+            }
+        }
+        'v' => {
+            // Positions to check: directly below left and directly below right
+            let possible_big_box_below = BigBox::new((left_x, left_y + 1), (right_x, right_y + 1));
+            let possible_big_box_left_diagonal =
+                BigBox::new((left_x - 1, left_y + 1), (right_x - 1, right_y + 1));
+            let possible_big_box_right_diagonal =
+                BigBox::new((left_x + 1, left_y + 1), (right_x + 1, right_y + 1));
+            if boxes.contains(&possible_big_box_below) {
+                result.push(possible_big_box_below);
+            }
+            if boxes.contains(&possible_big_box_left_diagonal) {
+                result.push(possible_big_box_left_diagonal);
+            }
+            if boxes.contains(&possible_big_box_right_diagonal) {
+                result.push(possible_big_box_right_diagonal);
+            }
+        }
         _ => {
-            // No other valid directions in this puzzle
+            // Invalid direction; do nothing
         }
     }
 
@@ -387,7 +370,7 @@ fn print_big_board(
     if move_cursor_up {
         move_console_cursor_up_by(height);
     }
-    if delay > 0.0 {
+    if delay > 0.0001 {
         std::thread::sleep(std::time::Duration::from_secs_f32(delay));
     }
 }
@@ -417,27 +400,49 @@ fn find_consecutive_big_boxes(
     visited.insert(first_big_box.clone());
 
     println!(
-        "Starting BFS to find consecutive boxes in direction '{}'",
+        "find_consecutive_boxes: Starting BFS to find consecutive boxes in direction '{}'",
         direction
     );
 
     while let Some(current_box) = queue.pop_front() {
-        println!("Visiting big box: {:?}", current_box);
+        println!(
+            "find_consecutive_boxes: Visiting big box: {:?}",
+            current_box
+        );
         consecutive_boxes.insert(current_box.clone());
 
         let boxes_ahead = get_big_boxes_ahead(&current_box, direction, boxes);
 
         for box_ahead in boxes_ahead {
             if !visited.contains(&box_ahead) {
-                println!("Found big box ahead: {:?}", box_ahead);
+                println!(
+                    "find_consecutive_boxes: Found big box ahead: {:?}",
+                    box_ahead
+                );
                 visited.insert(box_ahead.clone());
                 queue.push_back(box_ahead.clone());
             }
         }
     }
 
-    println!("Consecutive big boxes found: {:?}", consecutive_boxes);
+    println!(
+        "find_consecutive_boxes: Consecutive big boxes found: {:?}",
+        consecutive_boxes
+    );
     consecutive_boxes
+}
+
+fn is_overlapping(new_big_box: &BigBox, boxes: &HashSet<BigBox>) -> bool {
+    for existing_box in boxes {
+        if existing_box.left == new_big_box.left
+            || existing_box.right == new_big_box.left
+            || existing_box.left == new_big_box.right
+            || existing_box.right == new_big_box.right
+        {
+            return true;
+        }
+    }
+    false
 }
 
 fn push_big_box(
@@ -467,7 +472,6 @@ fn push_big_box(
             // Define the new big box positions
             let new_big_box = BigBox::new(ahead, (ahead.0 + 1, ahead.1));
 
-            // Check if the new position is occupied by another big box
             if boxes.contains(&new_big_box) {
                 return (false, boxes.clone());
             }
@@ -496,7 +500,6 @@ fn push_big_box(
             // Define the new big box positions
             let new_big_box = BigBox::new((ahead.0 - 1, ahead.1), ahead);
 
-            // Check if the new position is occupied by another big box
             if boxes.contains(&new_big_box) {
                 return (false, boxes.clone());
             }
@@ -512,33 +515,29 @@ fn push_big_box(
         }
         '^' | 'v' => {
             // Attempt to move the box vertically
-            let dy = if direction == '^' { -1 } else { 1 };
-
-            // Safely calculate new y-coordinates for both halves
             let new_left_half = match get_ahead(big_box.left, direction) {
                 Some(pos) => pos,
                 None => return (false, boxes.clone()), // Move invalid if out of bounds
             };
             let new_right_half = (new_left_half.0 + 1, new_left_half.1);
 
-            let new_big_box = BigBox::new(new_left_half, new_right_half);
+            let new_big_box_above = BigBox::new(new_left_half, new_right_half);
 
             // Check for walls at the new positions
             if walls.contains(&new_left_half) || walls.contains(&new_right_half) {
                 return (false, boxes.clone());
             }
 
-            // Check if the new position is occupied by another big box
-            if boxes.contains(&new_big_box) {
+            if boxes.contains(&new_big_box_above) {
                 return (false, boxes.clone());
             }
 
             // Move the box
             boxes.remove(&big_box);
-            boxes.insert(new_big_box.clone());
+            boxes.insert(new_big_box_above.clone());
             println!(
                 "Moved big box from {:?} to {:?} in direction '{}'",
-                big_box, new_big_box, direction
+                big_box, new_big_box_above, direction
             );
             (true, boxes.clone())
         }
@@ -608,13 +607,13 @@ fn push_big_boxes(
     // Convert LinkedHashSet to Vec for ordered processing
     let mut boxes_to_push: Vec<BigBox> = consecutive_boxes.into_iter().collect();
 
-    // Sort boxes based on direction to push from farthest to nearest
+    // // Sort boxes based on direction to push from farthest to nearest
     boxes_to_push.sort_by(|a, b| {
         match direction {
             '<' => b.left.0.cmp(&a.left.0), // Push leftmost first
             '>' => a.left.0.cmp(&b.left.0), // Push rightmost first
             '^' => b.left.1.cmp(&a.left.1), // Push topmost first
-            'v' => b.left.1.cmp(&a.left.1), // Push farthest down first
+            'v' => a.left.1.cmp(&b.left.1), // Push farthest down first
             _ => std::cmp::Ordering::Equal,
         }
     });
@@ -625,7 +624,8 @@ fn push_big_boxes(
         direction, boxes_to_push
     );
 
-    for box_pos in boxes_to_push {
+    while !boxes_to_push.is_empty() {
+        let box_pos = boxes_to_push.pop().unwrap();
         let (box_moved, new_boxes) = push_big_box(direction, box_pos, boxes, walls);
         moved = moved || box_moved;
         *boxes = new_boxes;
@@ -744,31 +744,59 @@ fn part2(board: &Vec<String>, directions: &String, print_delay: f32) -> usize {
         .sum()
 }
 
+pub fn test_large_example_part_two() {
+    let board = vec![
+        "####################".to_string(),
+        "##....[]....[]..[]##".to_string(),
+        "##............[]..##".to_string(),
+        "##..[][]....[]..[]##".to_string(),
+        "##....[]@.....[]..##".to_string(),
+        "##[]##....[]......##".to_string(),
+        "##[]....[]....[]..##".to_string(),
+        "##..[][]..[]..[][]##".to_string(),
+        "##........[]......##".to_string(),
+        "####################".to_string(),
+    ];
+
+    let directions = "<^^>>>vv<v>>v<<".to_string();
+    //10092
+    println!("Part 2 (big board test):");
+    let r = part2(&board, &directions, 0.0);
+    println!("Part 2 result {:?}:", r);
+    assert_eq!(r, 10092)
+}
+
 fn main() {
     // let (board, directions) = load_board_directions("inputs/15.txt", false);
     // println!("Part 1: {:?}", part1(&board, &directions, 0f32)); //1514333
 
+    // let (board, directions) = load_board_directions("inputs/15.side.test.txt", false);
+    // println!("Part 2: {:?}", part2(&board, &directions, 0.205f32)); //
+
     // let (board, directions) = load_board_directions("inputs/15.up.test.txt", false);
-    // println!("Part 2: {:?}", part2(&board, &directions, 0.20f32)); //
+    // println!("Part 2: {:?}", part2(&board, &directions, 0.50f32)); //
 
-    // let (board, directions) = load_board_directions("inputs/15.2.test.txt", true);
-    // println!("Part 2: {:?}", part2(&board, &directions, 0.20f32)); //
+    // let (board, directions) = load_board_directions("inputs/15.down.test.txt", false);
+    // println!("Part 2: {:?}", part2(&board, &directions, 0.50f32)); //
 
+    let (board, directions) = load_board_directions("inputs/15.2.test.txt", true);
+    println!("Part 2: {:?}", part2(&board, &directions, 0.02f32)); //
+
+    //crate::test::test_large_example_part_two();
 }
 
-mod test {
+pub mod test {
     use crate::{get_big_boxes, gps, load_board_directions};
 
     #[test]
     pub fn test_gps_score_on_enhanced_board() {
         let (board, directions) = load_board_directions("inputs/15.2.gps.test.txt", false);
         let mut boxes = get_big_boxes(&board);
-        let gps_score : usize = boxes
+        let gps_score: usize = boxes
             .iter()
             .map(|big_box| gps(big_box.left.0, big_box.left.1))
             .sum();
         assert_eq!(gps_score, 9021);
         println!("GPS score: {:?}", gps_score);
-
     }
 }
