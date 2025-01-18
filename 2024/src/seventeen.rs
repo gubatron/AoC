@@ -108,6 +108,10 @@ fn part1() -> String {
         match cpu.opcode {
             Opcode::ADV => {
                 // A division
+                // cpu.a = cpu.a / 2_i32.pow(cpu.operand as u32);
+                // 8>>1 == 8/2 == 4
+                // 8>>2 == 8/4 == 2
+                // 8>>3 == 8/8 == 1
                 cpu.a >>= cpu.operand;
             }
             Opcode::BXL => {
@@ -131,15 +135,18 @@ fn part1() -> String {
             }
             Opcode::OUT => {
                 // combo operand % 8, then outputs value. Multiple values are separated by commas
-                //cpu.output.push(utils::euclidean_modulo(cpu.operand, 8));
+                // cpu.output.push(utils::euclidean_modulo(cpu.operand, 8));
+                // cpu.output.push(cpu.operand % 8);
                 cpu.output.push(cpu.operand & 7);
             }
             Opcode::BDV => {
                 // B division A/2^operand into B
+                // cpu.b = cpu.a / 2_i32.pow(cpu.operand as u32);
                 cpu.b = cpu.a >> cpu.operand;
             }
             Opcode::CDV => {
                 // C division A/2^operand into C
+                // cpu.c = cpu.a / 2_i32.pow(cpu.operand as u32);
                 cpu.c = cpu.a >> cpu.operand;
             }
             Opcode::NIL => {}
